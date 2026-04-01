@@ -1,0 +1,17 @@
+<!-- templates/proposal_details.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Proposal Details</title>
+</head>
+<body>
+    <h2>Proposal Details</h2>
+    <p><strong>Title:</strong> {{ proposal.title }}</p>
+    <p><strong>Abstract:</strong> {{ proposal.abstract }}</p>
+    <p><strong>Keywords:</strong> {{ proposal.keywords }}</p>
+    <p><strong>Area of Research:</strong> {{ proposal.area }}</p>
+    <a href="{% url 'generate_pdf' proposal.id %}" target="_blank">Download as PDF</a>
+    
+</body>
+</html>

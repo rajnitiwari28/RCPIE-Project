@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center">Upload Consultancy Documents</h2>
+
+    <!-- ================= NEW CONSULTANCY ================= -->
+    <form method="POST" enctype="multipart/form-data" class="p-4 border rounded shadow mb-4">
+        {% csrf_token %}
+
+        <h4>New Consultancy Submission</h4>
+
+        <div class="mb-3">
+            <label class="form-label">Consultancy Title</label>
+            {{ form.cunsultancy_title }}
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Upload Main Document (PDF)</label>
+            {{ form.proof_pdf_1 }}
+        </div>
+
+        <button type="submit" class="btn btn-primary">Submit New</button>
+    </form>
+
+
+    <!-- ================= UPDATE CONSULTANCY ================= -->
+    <form method="POST" enctype="multipart/form-data" class="p-4 border rounded shadow">
+        {% csrf_token %}
+
+        <h4>Update Existing Consultancy (Upload Final Proof)</h4>
+
+        <div class="mb-3">
+            <label class="form-label">Select Consultancy</label>
+            <select name="consultancy_id" class="form-control">
+                <option value="">Select Consultancy</option>
+                {% for c in consultancies %}
+                    <option value="{{ c.id }}">
+                        {{ c.cunsultancy_title }}
+                    </option>
+                {% empty %}
+                    <option>No consultancy records found</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Upload Additional Proof</label>
+            <input type="file" name="proof_file" class="form-control">
+        </div>
+
+        <button type="submit" class="btn btn-success">Update Proof</button>
+    </form>
+</div>
+{% endblock %}

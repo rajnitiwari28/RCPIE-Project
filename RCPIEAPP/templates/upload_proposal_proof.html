@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center">Upload Proposal P-Load Documents</h2>
+
+    <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <h3>Submit New Proposal</h3>
+    <input type="text" name="proposal_title" placeholder="Enter Proposal Title"><br><br>
+
+    <input type="file" name="proof_pdf_1"><br><br>
+    <input type="file" name="proof_pdf_2"><br><br>
+
+    <button type="submit">Submit New</button>
+
+    <hr>
+
+    <h3>Update Existing Proposal (Upload Final Proof)</h3>
+
+    <h3>Update Existing Proposal</h3>
+
+    <select name="proposal_id">
+        <option value="">Select Proposal</option>
+        {% for p in proposals %}
+            <option value="{{ p.id }}">
+                {{ p.proposal_title }} ({{ p.rc_id }})
+            </option>
+        {% empty %}
+            <option>No proposals available</option>
+        {% endfor %}
+    </select>
+
+    <input type="file" name="proof_file">
+
+    <button type="submit">Update Proof</button>
+
+</form>
+</div>
+{% endblock %}

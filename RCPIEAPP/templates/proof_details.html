@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proof Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4">
+        <h2 class="text-center">Proof Details for {{ published_papers.title }}</h2>
+        <table class="table table-bordered">
+            
+            <tr>
+                <th>CMRIT FACULTY INVOLVED</th>
+                <td>{{ published_papers.cmrit_faculties }}</td>
+            </tr>
+            <tr>
+                <th>STUDENT INVOLVED</th>
+                <td>{{ published_papers.students_involved}}</td>
+            </tr>
+            <tr>
+                <th>CO-AUTHORS</th>
+                <td>{{ published_papers.co_authors}}</td>
+            </tr>
+            <tr>
+                <th>Journal/Conference</th>
+                <td>{{ published_papers.journal_name }}</td>
+            </tr>
+            <tr>
+                <th>Accepted Date</th>
+                <td>{{ published_papers.accepted_date }}</td>
+            </tr>
+            <tr>
+                <th>Published Date</th>
+                <td>{{ published_papers.published_date }}</td>
+            </tr>
+
+            <tr>
+                <th>Paper Type</th>
+                <td>{{ published_papers.paper_type }}</td>
+            </tr>
+
+            <tr>
+                <th>ISBN/DOI</th>
+                <td>{{ published_papers.isbn_doi }}</td>
+            </tr>
+            <tr>
+                <th>Proof Link</th>
+                <td><a href="{{ published_papers.proof_link }}" target="_blank">View Proof</a></td>
+            </tr>
+            {% if published_papers.published_site_link %}
+            <tr>
+                <th>Published Site</th>
+                <td><a href="{{ published_papers.published_site_link }}" target="_blank">View Published Site</a></td>
+            </tr>
+            {% endif %}
+        </table>
+        <a href="{% url 'view_all_research_proposals' %}" class="btn btn-secondary">Back to Home</a>
+    </div>
+</body>
+</html>

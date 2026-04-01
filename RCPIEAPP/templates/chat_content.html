@@ -1,0 +1,6 @@
+<!-- templates/chat_content.html -->
+{% for chat in chat_messages %}
+    <div>
+        <strong>{{ chat.user_profile.user.username }}:</strong> {{ chat.message }}
+    </div>
+{% endfor %}

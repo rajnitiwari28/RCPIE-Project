@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Upload Project Completion Details</h2>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-danger{% endif %}" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post" class="border p-4 shadow rounded bg-light">
+        {% csrf_token %}
+        
+        <div class="mb-3">
+            <label for="id_rc_id" class="form-label">RC ID</label>
+            {{ form.rc_id }}
+        </div>
+        
+        <div class="mb-3">
+            <label for="id_proof_link" class="form-label">Google Drive Proof Link</label>
+            {{ form.proof_link }}
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">Submit</button>
+    </form>
+</div>
+
+{% endblock %}

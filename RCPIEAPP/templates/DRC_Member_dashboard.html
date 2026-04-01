@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">DRC Member Dashboard</h2>
+
+    {% if assigned_reviews %}
+        <div class="row">
+            {% for review in assigned_reviews %}
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ review.research_proposal.title }}</h5>
+                        <p><strong>Faculty:</strong> {{ review.research_proposal.user_profile.user.get_full_name }}</p>
+                        <p><strong>Status:</strong> 
+                            {% if review.status == 'Pending' %}
+                                <span class="badge bg-warning text-dark">Pending Review</span>
+                            {% else %}
+                                <span class="badge bg-success">Reviewed</span>
+                            {% endif %}
+                        </p>
+
+                        {% if review.research_proposal.full_paper %}
+                            <a href="{{ review.research_proposal.full_paper.url }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                View Proposal
+                            </a>
+                        {% else %}
+                            <span class="text-muted">No file uploaded</span>
+                        {% endif %}
+
+                        {% if review.status == 'Pending' %}
+                        <button class="btn btn-primary btn-sm mt-2 open-review-modal"
+                            data-id="{{ review.id }}"
+                            data-title="{{ review.research_proposal.title }}">
+                            Review Proposal
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-center text-muted mt-4">No proposals assigned for review yet.</p>
+    {% endif %}
+</div>
+
+
+<!-- Review Modal -->
+<div class="modal fade" id="reviewModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Review Proposal</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <input type="hidden" id="review_id">
+
+        <div class="mb-3">
+            <label class="form-label">Proposal Title</label>
+            <input type="text" class="form-control" id="proposal_title" readonly>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Your Comments</label>
+            <textarea id="review_comments" class="form-control" rows="4" placeholder="Enter your review here..."></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Decision</label><br>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="review_status" value="Approved">
+                <label class="form-check-label">Approve</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="review_status" value="Rejected">
+                <label class="form-check-label">Reject</label>
+            </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-primary" id="submitReviewBtn">Submit Review</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- Chat Section -->
+<select id="chat-user" class="form-select mt-4">
+    <option disabled selected>Select a user</option>
+    {% for user in users %}
+        <option value="{{ user.id }}">{{ user.username }}</option>
+    {% endfor %}
+</select>
+
+<div id="chat-box" style="height: 250px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; margin-top: 10px;"></div>
+
+<input type="text" id="message" class="form-control mt-2" placeholder="Type a message">
+<button onclick="sendMessage()" class="btn btn-primary mt-2">Send</button>
+
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+
+    // ---------- OPEN MODAL ----------
+    $('.open-review-modal').click(function() {
+        $('#review_id').val($(this).data('id'));
+        $('#proposal_title').val($(this).data('title'));
+
+        let modal = new bootstrap.Modal(document.getElementById('reviewModal'));
+        modal.show();
+    });
+
+
+    // ---------- SUBMIT REVIEW ----------
+    $('#submitReviewBtn').click(function() {
+        var reviewId = $('#review_id').val();
+        var comments = $('#review_comments').val();
+        var status = $('input[name="review_status"]:checked').val();
+
+        if (!status) {
+            alert('Please select Approve or Reject.');
+            return;
+        }
+
+        $.ajax({
+            url: '{% url "submit_drc_review" %}',
+            method: 'POST',
+            data: {
+                review_id: reviewId,
+                comments: comments,
+                status: status,
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            success: function(response) {
+                alert(response.message);
+                location.reload();
+            },
+            error: function() {
+                alert('Error submitting review.');
+            }
+        });
+    });
+
+
+
+    // ---------- CHAT SYSTEM ----------
+    let receiverId = null;
+
+    $("#chat-user").on('change', function() {
+        receiverId = $(this).val();
+        fetchMessages();
+    });
+
+    function sendMessage() {
+        const msg = $("#message").val();
+        if (!receiverId) {
+            alert("Select a user first.");
+            return;
+        }
+
+        $.post("{% url 'send_message' %}", {
+            receiver_id: receiverId,
+            message: msg,
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+        }, function(data) {
+            $("#message").val('');
+            fetchMessages();
+        });
+    }
+
+    function fetchMessages() {
+        if (!receiverId) return;
+
+        $.post("{% url 'get_messages' %}", {
+            user2_id: receiverId,
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+        }, function(data) {
+            $("#chat-box").empty();
+            data.forEach(msg => {
+                $("#chat-box").append(`<div><strong>${msg.sender__username}</strong>: ${msg.message}</div>`);
+            });
+        });
+    }
+
+    setInterval(fetchMessages, 3000);
+
+});
+</script>
+{% endblock %}

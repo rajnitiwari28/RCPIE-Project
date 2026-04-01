@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Home</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        body {
+            background-color: #e9ecef;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        header, footer {
+            background-color: blue;
+            color: #fff;
+            padding: 10px 0;
+            text-align: center;
+            width: 100%;
+        }
+     
+        .content {
+            margin-left: 0px;
+            padding: 20px;
+            flex-grow: 1;
+        }
+        .logout-tab {
+            background-color: #f44336;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 14px;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+        }
+        .logout-tab:hover {
+            background-color: #d32f2f;
+        }
+        .form-section {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 800px;
+            margin: 20px auto;
+            box-shadow: 0 0 10px rgba(0,0,0,0.15);
+        }
+        .form-section h3 {
+            margin-bottom: 20px;
+        }
+
+        /* ===== Navbar Tab Styling ===== */
+
+.navbar-nav .nav-link {
+    color: white !important;
+    font-size: 18px;      /* increase size */
+    font-weight: bold;    /* make bold */
+    padding: 10px 18px;
+}
+
+.navbar-nav .nav-link:hover {
+    color: #ffd700 !important;   /* hover gold */
+}
+
+/* Dropdown items */
+.dropdown-menu {
+    background-color: #343a40;
+}
+
+.dropdown-item {
+    color: white;
+    font-size: 17px;
+    font-weight: bold;
+}
+
+.dropdown-item:hover {
+    background-color: #495057;
+    color: #ffd700;
+}
+
+
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1><div class="text-center">
+            <h2>Welcome, {{ user.first_name }} {{ user.last_name }}</h2>
+        </div></h1>
+        <a href="{% url 'logout' %}" class="logout-tab">Logout</a>
+    </header>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+
+        <a class="navbar-brand">Faculty Dashboard</a>
+
+        <button class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#navbarTabs">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarTabs">
+
+            <ul class="navbar-nav me-auto">
+
+                <!-- Proposal -->
+                <li class="nav-item">
+                    <a class="nav-link" href="#" id="proposal_submission_nav">
+                        RC_ID(Paper/Project/Patent)
+                    </a>
+                </li>
+
+                <!-- Upload Dropdown -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle"
+                       href="#"
+                       role="button"
+                       data-bs-toggle="dropdown">
+                       RC_ID and Proofs
+                    </a>
+
+                    <ul class="dropdown-menu">
+
+                        <li><a class="dropdown-item"
+                            href="{% url 'upload_proposal_proof' %}">
+                                Upload P-Load Document for RC_ID/Proof
+                        </a></li>
+
+                        <li><a class="dropdown-item"
+                            href="{% url 'upload_consultancy_proof' %}">
+                                Upload Consultancy(C-Load) Document for RC_ID/Proof
+                        </a></li>
+
+                        <li><a class="dropdown-item"
+                            href="{% url 'upload_enterprenuer_proof' %}">
+                            Upload Entrepreneur(E-Load) Document for RC_ID/Proof
+
+                        </a></li>
+
+                        <li><a class="dropdown-item"
+                            href="{% url 'upload_innovation_proof' %}">
+                            Upload Innovation(I-Load) Document for RC_ID/Proof
+                        </a></li>
+
+                        <li><a class="dropdown-item"
+                            href="{% url 'upload_research_proof' %}">
+                            Upload Research/Mandatory Paper Proof Document 
+
+                        </a></li>
+
+                        <li><a class="dropdown-item"
+                            href="{% url 'upload_patent_proof' %}">
+                            Upload Patent Proof Document
+
+                        </a></li>
+
+                        <li><a class="dropdown-item"
+                            href="{% url 'upload_project_proof' %}">
+                            Upload Project Proof
+                        </a></li>
+
+                    </ul>
+                </li>
+
+                <!-- Progress -->
+                <li class="nav-item">
+                    <a class="nav-link"
+                       href="{% url 'rc_id_generation' %}">
+                       Check Progress
+                    </a>
+                </li>
+
+                <!-- Google Sheet -->
+                <li class="nav-item">
+                    <a class="nav-link"
+                       target="_blank"
+                       href="https://docs.google.com/spreadsheets/d/1DBhqLMqNo-8IeCin2n2mDDmZA3QLlttB6FMtj_NGwlo/edit?usp=drive_link">
+                       C/P/I/E Load
+                    </a>
+                </li>
+
+            </ul>
+
+        </div>
+    </div>
+</nav>
+
+    <div class="content">
+        <div id="submission_form" class="form-section" style="display: none;">
+            <h3>Proposal Submission</h3>
+            <label for="proposal_type" class="form-label">Select Proposal Type:</label>
+            <select id="proposal_type" class="form-select mb-3">
+                <option value="">Select...</option>
+                <option value="Research Work">Research Paper</option>
+                <option value="Project Proposal">Project Proposal</option>
+                <option value="Patent">Patent</option>
+            </select>
+
+            <!-- Research Form -->
+            <form id="research_submission_form" method="post" enctype="multipart/form-data" style="display: none;">
+                {% csrf_token %}
+                <input type="text" name="title" class="form-control mb-2" placeholder="Title" required>
+                <textarea name="abstract" class="form-control mb-2" placeholder="Abstract" required></textarea>
+                
+                <b><label for="published_status" class="form-label">Is this paper already published in a Q1/Q2 Journal?</label></b>
+                    <select id="published_status" name="published_status" class="form-select mb-3" required>
+                        <option value="">Select...</option>
+                        <option value="No">No</option>
+                        <option value="Yes">Yes (Already Published in Q1/Q2 Journal)</option>
+                    </select>
+
+                <label for="research_type" class="form-label">Research Type:</label>
+                <select name="research_type" class="form-select mb-2" required>
+                    <option value="Mendatory Paper">Mandatory Paper</option>
+                    <option value="R load Paper">R load Paper</option>
+                </select>
+
+
+                <input type="text" name="keywords" class="form-control mb-2" placeholder="Keywords" required>
+                <input type="text" name="corresponding_author" class="form-control mb-2" placeholder="Corresponding Author" required>
+                <input type="text" name="Co_author" class="form-control mb-2" placeholder="Co Author(s)" required>
+                <input type="text" name="research_domain" class="form-control mb-2" placeholder="research_domain" required>
+                <input type="text" name="Forum_for_submission" class="form-control mb-2" placeholder="Forum for Submission" required>
+                <input type="text" name="ConferenceOrjournal_name" class="form-control mb-2" placeholder="Conference/Journal Name" required>
+                <input type="text" name="area" class="form-control mb-2" placeholder="Area of Research" required>
+                <input type="text" name="CMRIT_Citation" class="form-control mb-2" placeholder="CMRIT Citation/ Justification" required>
+
+                <label>Full Paper:</label><input type="file" name="full_paper" class="form-control mb-2" required>
+                <label>Plagiarism Report:</label><input type="file" name="plagiarism" class="form-control mb-2" required>
+                <button type="submit" class="btn btn-success">Submit</button>
+            </form>
+
+            <!-- Project Form -->
+            <form id="project_submission_form" method="post" enctype="multipart/form-data" style="display: none;">
+                {% csrf_token %}
+                <input type="text" name="project_title" class="form-control mb-2" placeholder="Project Title" required>
+                <textarea name="project_abstract" class="form-control mb-2" placeholder="Abstract" required></textarea>
+                <input type="text" name="keywords" class="form-control mb-2" placeholder="Keywords" required>
+                <input type="text" name="corresponding_author" class="form-control mb-2" placeholder="Corresponding Author" required>
+                <input type="text" name="faculty_included" class="form-control mb-2" placeholder="Faculty Included" required>
+                <label>Proposal Form (PDF):</label><input type="file" name="proposal_form" class="form-control mb-2" required>
+                <label>Plagiarism Report:</label><input type="file" name="plagiarism" class="form-control mb-2" required>
+                <button type="submit" class="btn btn-success">Submit</button>
+            </form>
+
+            <!-- Patent Form -->
+            <form id="patent_submission_form" method="post" enctype="multipart/form-data" style="display: none;">
+                {% csrf_token %}
+                <input type="text" name="patent_title" class="form-control mb-2" placeholder="Patent Title" required>
+                <textarea name="patent_abstract" class="form-control mb-2" placeholder="Abstract" required></textarea>
+                <input type="text" name="keywords" class="form-control mb-2" placeholder="Keywords" required>
+                <label for="patent_type" class="form-label">Patent Type:</label>
+                <select name="patent_type" class="form-select mb-2" required>
+                    <option value="Mandatory Patent">Mandatory Patent</option>
+                    <option value="I load Patent">Patent I Load</option>
+                </select>
+                <input type="text" name="corresponding_author" class="form-control mb-2" placeholder="Applicant Name" required>
+                <input type="text" name="co_author" class="form-control mb-2" placeholder="Co Applicant(s)" required>
+                <input type="text" name="Email_id" class="form-control mb-2" placeholder="Email" required>
+                <textarea name="related_work" class="form-control mb-2" placeholder="Related Work" required></textarea>
+                <textarea name="prior_art" class="form-control mb-2" placeholder="Prior art" required></textarea>
+
+                <textarea name="novelty" class="form-control mb-2" placeholder="Novelty of the work" required></textarea>
+                <textarea name="address" class="form-control mb-2" placeholder="Address for communication" required></textarea>
+
+                <label>Patent Document (PDF):</label><input type="file" name="full_pdf" class="form-control mb-2" required>
+                <button type="submit" class="btn btn-success">Submit</button>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy;Faculty Dashboard</p>
+    </footer>
+
+    <script>
+        $(document).ready(function () {
+            $('#proposal_submission').click(function () {
+                $('#submission_form').toggle();
+            });
+            $('#proposal_submission_nav').click(function () {
+                $('#submission_form').toggle();
+            });
+            $('#proposal_type').change(function () {
+                var selected = $(this).val();
+                $('#research_submission_form, #project_submission_form, #patent_submission_form').hide();
+                if (selected === 'Research Work') {
+                    $('#research_submission_form').show();
+                } else if (selected === 'Project Proposal') {
+                    $('#project_submission_form').show();
+                } else if (selected === 'Patent') {
+                    $('#patent_submission_form').show();
+                }
+            });
+
+            // AJAX for Research Form
+            $('#research_submission_form').submit(function(event) {
+                event.preventDefault();
+                var formData = new FormData(this);
+                $.ajax({
+                    url: '{% url "research_submission" %}',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            alert('Research submitted successfully!');
+                            $('#research_submission_form')[0].reset();
+                        } else {
+                            alert('Error submitting research!');
+                        }
+                    },
+                    error: function() {
+                        alert('Error submitting research!');
+                    }
+                });
+            });
+
+            // AJAX for Project Form
+            $('#project_submission_form').submit(function(event) {
+                event.preventDefault();
+                var formData = new FormData(this);
+                $.ajax({
+                    url: '{% url "project_submission" %}',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            alert('Project submitted successfully!');
+                            $('#project_submission_form')[0].reset();
+                        } else {
+                            alert('Error submitting project!');
+                        }
+                    },
+                    error: function() {
+                        alert('Error submitting project!');
+                    }
+                });
+            });
+
+            // AJAX for Patent Form
+            $('#patent_submission_form').submit(function(event) {
+                event.preventDefault();
+                var formData = new FormData(this);
+                $.ajax({
+                    url: '{% url "patent_submission" %}',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            alert('Patent submitted successfully!');
+                            $('#patent_submission_form')[0].reset();
+                        } else {
+                            alert('Error submitting patent!');
+                        }
+                    },
+                    error: function() {
+                        alert('Error submitting patent!');
+                    }
+                });
+            });
+        });
+
+
+        // Toggle Full Paper and Plagiarism fields based on Q1/Q2 publication status
+$('#published_status').change(function () {
+    if ($(this).val() === 'Yes') {
+        // Hide both file upload fields
+        $('label:contains("Full Paper")').hide();
+        $('input[name="full_paper"]').hide().prop('required', false);
+
+        $('label:contains("Plagiarism Report")').hide();
+        $('input[name="plagiarism"]').hide().prop('required', false);
+    } else if ($(this).val() === 'No') {
+        // Show both file upload fields again
+        $('label:contains("Full Paper")').show();
+        $('input[name="full_paper"]').show().prop('required', true);
+
+        $('label:contains("Plagiarism Report")').show();
+        $('input[name="plagiarism"]').show().prop('required', true);
+    } else {
+        // Default: ensure fields are visible when no selection is made
+        $('label:contains("Full Paper")').show();
+        $('input[name="full_paper"]').show().prop('required', true);
+
+        $('label:contains("Plagiarism Report")').show();
+        $('input[name="plagiarism"]').show().prop('required', true);
+    }
+});
+
+    </script>
+</body>
+</html>
