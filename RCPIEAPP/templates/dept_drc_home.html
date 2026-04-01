@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Department DRC Home</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            background: url('https://www.example.com/your-background-image.jpg') no-repeat center center fixed;
+            background-size: cover;
+        }
+        .container {
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .tab-content {
+            margin-top: 20px;
+        }
+        #chatbox {
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        #chat_content {
+            height: 80px;
+            overflow-y: scroll;
+        }
+        .btn-link {
+            color: #007bff;
+        }
+        .btn-link:hover {
+            color: #0056b3;
+        }
+
+        .logout-tab {
+            background-color: #f44336;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 14px;
+            position: absolute;
+            top: 70px;
+            right: 5px;
+        }
+        .logout-tab:hover {
+            background-color: #d32f2f;
+        }
+        header, footer {
+            background-color: blue;
+            color: #ffffff;
+            padding: 10px 0;
+            text-align: center;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <header>
+    <div class="container mt-4">
+      
+        <h2 class="text-center mb-4">Welcome, Department DRC {{ user.first_name }} {{ user.last_name }} From  {{ user.userprofile.department }}</h2>
+       
+        <a href="{% url 'logout' %}" class="logout-tab">Logout</a>
+        </header>
+        <!-- Tabs -->
+       <ul class="nav nav-tabs" id="myTab" role="tablist">
+
+    <!-- Research Tab -->
+    <li class="nav-item" role="presentation">
+        <a class="nav-link active" 
+           id="research-tab"
+           data-bs-toggle="tab"
+           href="#research_tab"
+           role="tab"
+           aria-controls="research_tab"
+           aria-selected="true">
+           Research Proposals
+        </a>
+    </li>
+
+    <!-- Proposal P Tab -->
+    <li class="nav-item" role="presentation">
+        <a class="nav-link"
+           id="proposal-p-tab"
+           data-bs-toggle="tab"
+           href="#proposal-p"
+           role="tab"
+           aria-controls="proposal-p"
+           aria-selected="false">
+           Proposal Proofs (P-Load)
+        </a>
+    </li>
+
+    <!-- Patent Tab -->
+    <li class="nav-item" role="presentation">
+        <a class="nav-link"
+           id="patent-tab"
+           data-bs-toggle="tab"
+           href="#patent"
+           role="tab"
+           aria-controls="patent"
+           aria-selected="false">
+           Patent
+        </a>
+    </li>
+
+    <li>
+        <button>
+            <a href="https://accounts.google.com/InteractiveLogin/signinchooser?continue=https%3A%2F%2Fmail.google.com%2Fmail%2F&emr=1&ltmpl=default&ltmplcache=2&osid=1&passive=true&rm=false&scc=1&service=mail&ss=1&ifkv=AXH0vVt1-lphv98P69_lWpNQ9wRJiO0gBSPUQM27DzWY3q-t43NMX7NpM-mD2WjOOUfe0FXTL3clNA&ddm=1&flowName=GlifWebSignIn&flowEntry=ServiceLogin"
+               target="_blank">
+               Send Email
+            </a>
+        </button>
+    </li>
+
+</ul>
+
+
+<!-- TAB CONTENT -->
+<div class="tab-content" id="myTabContent">
+
+    <!-- Research Proposals Tab -->
+    <div class="tab-pane fade show active"
+         id="research_tab"
+         role="tabpanel"
+         aria-labelledby="research-tab">
+
+        <h3 class="mt-3">Research Proposals Assigned by RC Convener</h3>
+        <ul class="list-group" id="research_proposals_list">
+            <!-- Research Proposals will be dynamically loaded here -->
+        </ul>
+    </div>
+
+    <!-- Proposal P Tab -->
+    <div class="tab-pane fade"
+         id="proposal-p"
+         role="tabpanel"
+         aria-labelledby="proposal-p-tab">
+
+        <h3 class="mt-3">Proposal Proofs (P-Load) Assigned by RC Convener</h3>
+        <ul class="list-group" id="proposal_p_list">
+            <!-- Proposal proofs will be dynamically loaded here -->
+        </ul>
+    </div>
+
+    <!-- Patent Tab -->
+    <div class="tab-pane fade"
+         id="patent"
+         role="tabpanel"
+         aria-labelledby="patent-tab">
+
+        <h3 class="mt-3">Patent Assigned by RC Convener</h3>
+        <ul class="list-group" id="patent_list">
+            <!-- patent will be dynamically loaded here -->
+        </ul>
+    </div>
+
+</div>
+
+                 <div class="mt-3">
+                    <button id="send_to_drc_members" class="btn btn-primary">Send Selected Proposals to DRC Members</button>
+                </div>
+         
+        <!-- Chat Section -->
+        <div id="chatbox" class="mt-4">
+            <h3>Chat with RC Convener and Faculties</h3>
+            <div id="chat_content" class="border rounded p-3 mb-3">
+                <!-- Chat content will be dynamically loaded here -->
+            </div>
+            <div class="input-group">
+                <textarea id="chat_message" class="form-control" placeholder="Type your message..."></textarea>
+                <button id="send_message" class="btn btn-outline-secondary">Send</button>
+            </div>
+        </div>
+    </div>
+    <footer>
+        <p>&copy; 2024 Department DRC Home. All rights reserved.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        var drcName = "{{ user.first_name|escapejs }}"; 
+        var dept ="{{ user.userprofile.department|escapejs }}";
+    </script>
+    
+    <script>
+        $(document).ready(function() {
+            // Send selected proposals to DRC Members
+$('#send_to_drc_members').click(function() {
+    var selected = [];
+    $('.proposal_checkbox:checked').each(function() {
+        selected.push($(this).val());
+    });
+
+    if (selected.length === 0) {
+        alert('Please select at least one proposal to send!');
+        return;
+    }
+
+    // Fetch list of available DRC Members dynamically (optional modal)
+    $.ajax({
+        url: '{% url "get_drc_members" %}',
+        type: 'GET',
+        success: function(response) {
+            var members = response.members;
+
+            // Create a simple selection prompt
+            var memberOptions = members.map(m => `${m.id}: ${m.name}`).join('\n');
+            var selectedMemberId = prompt('Enter the DRC Member ID to assign (choose one):\n' + memberOptions);
+
+            if (!selectedMemberId) return;
+
+            $.ajax({
+                url: '{% url "send_to_drc_member" %}',
+                type: 'POST',
+                data: {
+                    'proposal_ids': selected,
+                    'member_id': selectedMemberId,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        alert('Proposals sent to DRC Member successfully!');
+                    } else {
+                        alert('Error sending proposals.');
+                    }
+                },
+                error: function(xhr) {
+                    alert('Error sending proposals to member.');
+                }
+            });
+        },
+        error: function() {
+            alert('Error fetching DRC member list.');
+        }
+    });
+});
+
+
+
+            loadProposals();
+            loadpatents();
+
+
+            function loadProposals() {
+                $.ajax({
+                    url: '{% url "load_proposals_drc" %}',
+                    type: 'GET',
+                    success: function(response) {
+                        var proposalsHtml = '';
+                        response.proposals.forEach(function(proposal) {
+                            proposalsHtml += `
+                                <li id="proposal_${proposal.id}" class="list-group-item mb-3">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input proposal_checkbox" value="${proposal.id}" id="proposal_check_${proposal.id}">
+                                        <label class="form-check-label" for="proposal_check_${proposal.id}">
+                                            <strong>${proposal.title}</strong>
+                                        </label>
+                                    </div>
+                                    <p class="mb-1"><strong>Abstract:</strong> ${proposal.abstract}</p>
+                                    <p class="mb-1"><strong>Keywords:</strong> ${proposal.keywords}</p>
+                                    <p class="mb-1"><strong>Status:</strong> ${proposal.status}</p>
+                                    <p class="mb-1"><strong>Comment:</strong> ${proposal.dcr_comment}</p>
+                                    <p class="mb-1"><strong>DRC Member Status:</strong> ${proposal.drc_member_status}</p>
+                                    <p class="mb-1"><strong>DRC Member Comment:</strong> ${proposal.drc_member_comments}</p>
+
+                                    ${proposal.full_paper_url ? `<a href="${proposal.full_paper_url}" class="btn btn-link p-0" download>Download Full Paper</a>` : ''}
+                                    <br>
+                                    ${proposal.plagiarism_url ? `<a href="${proposal.plagiarism_url}" class="btn btn-link p-0" download>Download plagiarism Report</a>` : ''}
+
+                                    <div class="mt-2">
+                                        <button class="btn btn-success btn-sm approve_proposal" data-id="${proposal.id}">Approve</button>
+                                        <button class="btn btn-danger btn-sm reject_proposal" data-id="${proposal.id}">Reject</button>
+                                    <button class="btn btn-primary btn-sm communicate"
+                                            data-id="${proposal.id}"
+                                            data-faculty="${proposal.user_profile__user_id}">
+                                            Communicate with Faculty
+                                    </button>
+                                    
+                                        </div>
+                                </li>
+                            `;
+                        });
+                        $('#research_proposals_list').html(proposalsHtml);
+
+                        // Attach event handlers to the newly added buttons
+                        $('.approve_proposal').click(function() {
+                            var proposalId = $(this).data('id');
+                            var proposalType = "research";
+                            updateProposalStatus(proposalId, proposalType, `Approved by Dept DRC  Prof. ${drcName} - Department: ${dept}`);
+                        });
+
+                        $('.reject_proposal').click(function() {
+                            var proposalId = $(this).data('id');
+                            var proposalType = "research";
+                            updateProposalStatus(proposalId, proposalType, `Rejected by Dept DRC  Prof. ${drcName} - Department: ${dept}`);
+                        });
+
+                        $('.communicate').click(function() {
+
+                            var proposalId = $(this).data('id');
+                            var facultyId = $(this).data('faculty');
+
+                            communicateWithFaculty(proposalId, facultyId);
+
+                        });
+                    },
+                    error: function(xhr) {
+                        alert('Error loading proposals!');
+                    }
+                });
+            }
+
+
+            function updateProposalStatus(proposalId, proposalType, status) {
+                var comment = prompt('Enter your comment:');
+                if (comment === null) return; // If the user cancels the prompt, don't proceed with the AJAX request
+                
+                $.ajax({
+                    url: '{% url "update_proposal_status_drc" %}',
+                    type: 'POST',
+                    data: {
+                        'proposal_id': proposalId,
+                        'proposal_type': proposalType,  // Pass the proposal type
+                        'status': status,
+                        'comment': comment,
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            if (proposalType === 'research') {
+                                loadProposals();
+                            } else if (proposalType === 'patent') {
+                                loadpatents();
+                            } else if (proposalType === 'project') {
+                                loadprojects();
+                            }
+                        } else {
+                            alert('Error updating proposal status.');
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error(xhr.responseText); // Log error details for debugging
+                        alert('Error updating proposal status.');
+                    }
+                });
+            }
+        
+        
+
+function communicateWithFaculty(proposalId, facultyId) {
+    var message = prompt('Enter your message to the faculty:');
+    
+    $.ajax({
+        url: '{% url "send_message_to_faculty" %}',
+        type: 'POST',
+        data: {
+            'proposal_id': proposalId,
+            'faculty_id': facultyId,
+            'message': message,
+            'csrfmiddlewaretoken': '{{ csrf_token }}'
+        },
+        success: function(response) {
+            if (response.status === 'success') {
+                alert('Message sent to faculty successfully.');
+            } else {
+                alert('Error sending message to faculty.');
+            }
+        },
+        error: function(xhr) {
+            alert('Error sending message to faculty.');
+        }
+    });
+}
+ });
+// Load Patents 
+function loadpatents() {
+                $.ajax({
+                    url: '{% url "load_patent_to_drc" %}',
+                    type: 'GET',
+                    success: function(response) {
+                        var patentHtml = '';
+                        response.patents.forEach(function(patent) {
+                            patentHtml += `
+                                <li id="patent_${patent.id}" class="list-group-item mb-3">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input patent_checkbox" value="${patent.id}" id="patent_check_${patent.id}">
+                                        <label class="form-check-label" for="patent_check_${patent.id}">
+                                            <strong>${patent.title}</strong>
+                                        </label>
+                                    </div>
+                                    <p class="mb-1"><strong>Abstract:</strong> ${patent.abstract}</p>
+                                    <p class="mb-1"><strong>Keywords:</strong> ${patent.keywords}</p>
+                                    <p class="mb-1"><strong>Status:</strong> ${patent.status}</p>
+                                    <p class="mb-1"><strong>Comment:</strong> ${patent.dcr_comment}</p>
+                                    <p class="mb-1"><strong>DRC Member Status:</strong> ${patent.drc_member_status}</p>
+                                    <p class="mb-1"><strong>DRC Member Comment:</strong> ${patent.drc_member_comments}</p>
+                                    ${patent.full_pdf_url ? `<a href="${patent.full_pdf_url}" target="_blank" class="btn btn-link p-0">Download Full Patent</a>` : ''}
+                                    <br>
+                                    <div class="mt-2">
+                                        <button class="btn btn-success btn-sm approve_patent" data-id="${patent.id}">Approve</button>
+                                        <button class="btn btn-danger btn-sm reject_patent" data-id="${patent.id}">Reject</button>
+                                        <button class="btn btn-primary btn-sm communicate"
+                                                    data-id="${patent.id}"
+                                                    data-faculty="${patent.faculty_id}">
+                                            Communicate
+                                        </button>                                    
+                                        
+                                    </div>
+                                </li>
+                            `;
+                        });
+                        $('#patent_list').html(patentHtml);
+
+                        // Attach event handlers to the newly added buttons
+                        $('.approve_patent').click(function() {
+                            var patentId = $(this).data('id');
+                            var patentType = "patent";
+                            updatePatentStatus(patentId, patentType, `Approved by Dept DRC  Prof. ${drcName} - Department: ${dept}`);
+                        });
+
+                        $('.reject_patent').click(function() {
+                            var patentId = $(this).data('id');
+                            var patentType = "patent";
+                            updatePatentStatus(patentId, patentType, `Rejected by Dept DRC  Prof. ${drcName} - Department: ${dept}`);
+                        });
+
+                        $('.communicate').click(function() {
+                            var patentId = $(this).data('id');
+                            var facultyId = $(this).data('faculty');
+
+                            communicateWithFaculty_patent(patentId, facultyId);
+                        });
+                    },
+                    error: function(xhr) {
+                        alert('Error loading proposals!');
+                    }
+                });
+            }
+
+function updatePatentStatus(patentId, patentType, status) {
+                var comment = prompt('Enter your comment:');
+                if (comment === null) return; // If the user cancels the prompt, don't proceed with the AJAX request
+                
+                $.ajax({
+                    url: '{% url "update_patent_status_drc" %}',
+                    type: 'POST',
+                    data: {
+                        'patent_id': patentId,
+                        'patent_type': patentType,  // Pass the proposal type
+                        'status': status,
+                        'comment': comment,
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            
+                                loadpatents();
+                        } 
+                        else {
+                            alert('Error updating proposal status.');
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error(xhr.responseText); // Log error details for debugging
+                        alert('Error updating proposal status.');
+                    }
+                });
+            }
+        
+function communicateWithFaculty_patent(patentId, facultyId) {
+    var message = prompt('Enter your message to the faculty:');
+    
+    $.ajax({
+        url: '{% url "send_message_to_faculty_patent" %}',
+        type: 'POST',
+        data: {
+            'patent_id': patentId,
+            'faculty_id': facultyId,
+            'message': message,
+            'csrfmiddlewaretoken': '{{ csrf_token }}'
+        },
+        success: function(response) {
+            if (response.status === 'success') {
+                alert('Message sent to faculty successfully.');
+            } else {
+                alert('Error sending message to faculty.');
+            }
+        },
+        error: function(xhr) {
+            alert('Error sending message to faculty.');
+        }
+    });
+}
+ 
+    // Load Proposal Proofs (P-Load)
+function loadProposalP() {
+    $.ajax({
+        url: '{% url "load_proposal_p_drc" %}', // Django view to return Proposal_P JSON
+        type: 'GET',
+        success: function(response) {
+            var html = '';
+            response.proposal_p.forEach(function(proof) {
+                html += `
+<li class="list-group-item mb-3" id="proposal_p_${proof.id}">
+
+    <input type="checkbox"
+           class="form-check-input me-2 proposal_p_checkbox"
+           value="${proof.id}">
+
+    <p><strong>Title:</strong> ${proof.title} (RC_ID: ${proof.rc_id})</p>
+    <p><strong>Faculty:</strong> ${proof.faculty}</p>
+    <p><strong>Uploaded At:</strong> ${proof.uploaded_at}</p>
+
+    ${proof.proof_pdf_1 ? `<a href="${proof.proof_pdf_1}" class="btn btn-link p-0" download>Download PDF 1</a><br>` : ''}
+
+    ${proof.proof_pdf_2 ? `<a href="${proof.proof_pdf_2}" class="btn btn-link p-0" download>Download PDF 2</a>` : ''}
+
+    <div class="mt-2">
+        <button class="btn btn-success btn-sm approve_proposal_p" data-id="${proof.id}">Approve</button>
+
+        <button class="btn btn-danger btn-sm reject_proposal_p" data-id="${proof.id}">Reject</button>
+
+        <button class="btn btn-primary btn-sm communicate_proposal_p"
+                data-id="${proof.id}"
+                data-faculty="${proof.faculty_id}">
+                Communicate
+        </button>
+    </div>
+
+</li>
+`;
+            });
+            $('#proposal_p_list').html(html);
+
+            // Attach event handlers to buttons
+            $('.approve_proposal_p').click(function() {
+                var proofId = $(this).data('id');
+                updateProposalPStatus(proofId, 'Approved by Dept DRC');
+            });
+
+            $('.reject_proposal_p').click(function() {
+                var proofId = $(this).data('id');
+                updateProposalPStatus(proofId, 'Rejected by Dept DRC');
+            });
+
+            $('.communicate_proposal_p').click(function() {
+                var proofId = $(this).data('id');
+                var facultyId = $(this).data('faculty');
+                communicateWithFaculty(proofId, facultyId);
+            });
+        },
+        error: function(xhr) {
+            alert('Error loading Proposal Proofs!');
+        }
+    });
+}
+
+function updateProposalPStatus(proofId, status) {
+    var comment = prompt('Enter your comment:');
+    if (comment === null) return;
+
+    $.ajax({
+        url: '{% url "update_proposal_status_drc" %}',
+        type: 'POST',
+        data: {
+            'proposal_id': proofId,
+            'proposal_type': 'proposal_p',  // important
+            'status': status,
+            'comment': comment,
+            'csrfmiddlewaretoken': '{{ csrf_token }}'
+        },
+        success: function(response) {
+            if (response.status === 'success') {
+                // Remove the proposal proof from the page
+                $('#proposal_p_' + proofId).remove();
+                alert('Proposal Proof sent to RC successfully!');
+            } else {
+                alert('Error updating proposal status.');
+            }
+        },
+        error: function(xhr) {
+            alert('Error updating proposal status.');
+        }
+    });
+}
+
+
+// Send selected Proposal_P to Dept DRC
+$('#send_proposal_p').click(function() {
+    var selected = [];
+    $('.proposal_p_checkbox:checked').each(function() {
+        selected.push($(this).val());
+    });
+
+    if(selected.length === 0) {
+        alert('Please select at least one Proposal Proof!');
+        return;
+    }
+
+    $.ajax({
+        url: '{% url "send_to_dept_drc" %}', // your existing Django view
+        type: 'POST',
+        data: {
+            'proposal_p_ids': selected,
+            'csrfmiddlewaretoken': '{{ csrf_token }}'
+        },
+        success: function(response) {
+            if(response.status === 'success') {
+                alert('Selected Proposal Proofs sent to Dept DRC successfully!');
+                loadProposalP(); // reload to reflect any changes
+            } else {
+                alert('Error sending Proposal Proofs!');
+            }
+        },
+        error: function(xhr) {
+            alert('Error sending Proposal Proofs!');
+        }
+    });
+});
+
+// Call loadProposalP when page loads
+loadProposalP();
+
+// Load DRC Members and show modal
+$(document).on('click', '.send_to_members', function() {
+    var proposalId = $(this).data('id');
+    $('#proposal_id_modal').val(proposalId);
+
+    $.ajax({
+        url: '{% url "load_drc_members" %}',
+        type: 'GET',
+        success: function(response) {
+            var membersHtml = '';
+            response.members.forEach(function(member) {
+                membersHtml += `
+                    <div class="form-check">
+                        <input class="form-check-input drc_member_checkbox" type="checkbox" value="${member.id}" id="member_${member.id}">
+                        <label class="form-check-label" for="member_${member.id}">
+                            ${member.name} (${member.department})
+                        </label>
+                    </div>`;
+            });
+            $('#member_list').html(membersHtml);
+            $('#sendToMembersModal').modal('show');
+        },
+        error: function() {
+            alert('Error loading members');
+        }
+    });
+});
+
+// Send proposal to selected members
+$('#confirmSendMembers').click(function() {
+    var proposalId = $('#proposal_id_modal').val();
+    var selectedMembers = [];
+    $('.drc_member_checkbox:checked').each(function() {
+        selectedMembers.push($(this).val());
+    });
+
+    if (selectedMembers.length === 0) {
+        alert('Please select at least one member!');
+        return;
+    }
+
+    $.ajax({
+        url: '{% url "send_to_drc_members" %}',
+        method: 'POST',
+        data: {
+            'proposal_id': proposalId,
+            'members': JSON.stringify(selectedMembers),
+            'csrfmiddlewaretoken': '{{ csrf_token }}'
+        },
+        success: function(response) {
+            alert(response.message);
+            $('#sendToMembersModal').modal('hide');
+        },
+        error: function() {
+            alert('Error sending proposal');
+        }
+    });
+});
+
+    </script>
+</body>
+</html>

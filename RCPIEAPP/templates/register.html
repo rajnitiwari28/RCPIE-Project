@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    {% load static %}
+    {% load widget_tweaks %}
+
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{% static 'signup.css' %}" rel="stylesheet">
+    <style>
+        body {
+            background-image: url('https://mdbcdn.b-cdn.net/img/Photos/new-templates/search-box/img4.webp');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-position: center;
+        }
+        .card {
+            border-radius: 15px;
+        }
+        .card-header {
+            background-color: #007bff;
+            color: white;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+        .form-table {
+            background-color: #ffffff;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            padding: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .form-table td {
+            padding: 15px;
+        }
+        .form-table .form-label {
+            font-size: 1 rem;
+        }
+        .form-control {
+            font-size: 1.1rem;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #004085;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+            border-color: #545b62;
+        }
+        .text-center {
+            text-align: center;
+            
+        }
+    </style>
+</head>
+<body>
+    <section class="vh-100 d-flex justify-content-center align-items-center">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-8 col-lg-6">
+                    <div class="card shadow-lg">
+                        <div class="card-header">
+                            <h2 class="text-uppercase mb-0">Create an Account</h2>
+                        </div>
+                        <div class="card-body">
+                            <form method="post">
+                                {% csrf_token %}
+                                <center>
+                                <table class="form-table w-50">
+                                    <tr>
+                                        <td>
+                                            <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name</label>
+                                            {{ form.first_name|add_class:"form-control form-control-lg" }}
+                                            {% if form.first_name.errors %}
+                                                <div class="text-danger">{{ form.first_name.errors }}</div>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name</label>
+                                            {{ form.last_name|add_class:"form-control form-control-lg" }}
+                                            {% if form.last_name.errors %}
+                                                <div class="text-danger">{{ form.last_name.errors }}</div>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <label for="{{ form.user_id.id_for_label }}" class="form-label">User ID</label>
+                                            {{ form.user_id|add_class:"form-control form-control-lg" }}
+                                            {% if form.user_id.errors %}
+                                                <div class="text-danger">{{ form.user_id.errors }}</div>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
+                                            {{ form.email|add_class:"form-control form-control-lg" }}
+                                            {% if form.email.errors %}
+                                                <div class="text-danger">{{ form.email.errors }}</div>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <label for="{{ form.mob.id_for_label }}" class="form-label">Mobile Number</label>
+                                            {{ form.mob|add_class:"form-control form-control-lg" }}
+                                            {% if form.mob.errors %}
+                                                <div class="text-danger">{{ form.mob.errors }}</div>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <label for="{{ form.department.id_for_label }}" class="form-label">Department</label>
+                                            {{ form.department|add_class:"form-control form-control-lg" }}
+                                            {% if form.department.errors %}
+                                                <div class="text-danger">{{ form.department.errors }}</div>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <label for="{{ form.gender.id_for_label }}" class="form-label">Gender</label>
+                                            {{ form.gender|add_class:"form-control form-control-lg" }}
+                                            {% if form.gender.errors %}
+                                                <div class="text-danger">{{ form.gender.errors }}</div>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <label for="{{ form.role.id_for_label }}" class="form-label">Role</label>
+                                            {{ form.role|add_class:"form-control form-control-lg" }}
+                                            {% if form.role.errors %}
+                                                <div class="text-danger">{{ form.role.errors }}</div>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
+                                            {{ form.username|add_class:"form-control form-control-lg" }}
+                                            {% if form.username.errors %}
+                                                <div class="text-danger">{{ form.username.errors }}</div>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <label for="{{ form.password1.id_for_label }}" class="form-label">Password</label>
+                                            {{ form.password1|add_class:"form-control form-control-lg" }}
+                                            {% if form.password1.errors %}
+                                                <div class="text-danger">{{ form.password1.errors }}</div>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <label for="{{ form.password2.id_for_label }}" class="form-label">Confirm Password</label>
+                                            {{ form.password2|add_class:"form-control form-control-lg" }}
+                                            {% if form.password2.errors %}
+                                                <div class="text-danger">{{ form.password2.errors }}</div>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-center">
+                                            <button type="submit" class="btn btn-primary w-100 mb-2">Register</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-center">
+                                            <a href="{% url 'login' %}" class="btn btn-secondary w-100">Already have an account? Login</a>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </center>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.11.6/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/5.1.3/js/bootstrap.min.js"></script>
+</body>
+</html>

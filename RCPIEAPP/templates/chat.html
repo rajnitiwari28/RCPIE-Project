@@ -1,0 +1,44 @@
+<!-- templates/chat.html -->
+
+{% extends 'base.html' %}  <!-- Optional: extend your layout -->
+
+{% block content %}
+<h3>Chat with {{ receiver.username }}</h3>
+
+<div id="chat-box" style="height: 300px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;"></div>
+
+<input type="text" id="message" placeholder="Type a message">
+<button onclick="sendMessage()">Send</button>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    const receiverId = {{ receiver.id }};  // Django passes receiver ID to template
+
+    function sendMessage() {
+        const msg = $("#message").val();
+        $.post("{% url 'send_message' %}", {
+            receiver_id: receiverId,
+            message: msg,
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+        }, function(data) {
+            $("#message").val('');
+            fetchMessages();
+        });
+    }
+
+    function fetchMessages() {
+        $.post("{% url 'get_messages' %}", {
+            user2_id: receiverId,
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+        }, function(data) {
+            $("#chat-box").empty();
+            data.forEach(msg => {
+                $("#chat-box").append(`<div><strong>${msg.sender__username}</strong>: ${msg.message}</div>`);
+            });
+        });
+    }
+
+    setInterval(fetchMessages, 3000);
+    fetchMessages();
+</script>
+{% endblock %}

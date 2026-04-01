@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add a New Research Proof</title>
+    <!-- Include jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        /* Background Styling */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #4e54c8, #8f94fb);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Form Container */
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+
+        /* Heading */
+        h2 {
+            color: #4e54c8;
+            margin-bottom: 20px;
+        }
+
+        /* Input Fields */
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        /* Submit Button */
+        .btn-submit {
+            width: 100%;
+            background-color: #4e54c8;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-submit:hover {
+            background-color: #3b42a0;
+            transform: scale(1.05);
+        }
+
+        /* Alert Message Styling */
+        .message-box {
+            padding: 12px;
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Add the Proof Data Here</h2>
+
+        <!-- Alert Message -->
+        {% if messages %}
+            <div class="message-box" id="alertBox">
+                {% for message in messages %}
+                    {{ message }}
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}  <!-- Render the form fields -->
+            <button type="submit" class="btn-submit">Submit</button>
+        </form>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Alert Message
+        window.onload = function() {
+            let alertBox = document.getElementById("alertBox");
+            if (alertBox) {
+                alertBox.style.display = "block"; // Show the alert box
+                setTimeout(() => {
+                    alertBox.style.display = "none"; // Hide after 3 seconds
+                }, 3000);
+            }
+        };
+
+    
+$(document).ready(function () {
+    $("#id_title").change(function () {
+        let proposal_id = $(this).val();
+
+        if (proposal_id) {
+            $.ajax({
+                url: "{% url 'get_rc_id_research_proof' %}",
+                data: { proposal_id: proposal_id },
+                success: function (response) {
+                    // Fill RC_ID
+                    $("#id_rcid").val(response.rc_id);  
+
+                    // Fill Co-Authors
+                    $("#id_co_authors").val(response.co_author);
+                }
+            });
+        } else {
+            $("#id_rcid").val("");  
+            $("#id_co_authors").val("");
+        }
+    });
+});
+
+    </script>
+
+</body>
+</html>

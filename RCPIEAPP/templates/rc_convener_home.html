@@ -1,0 +1,1249 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>RC Convener Home</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            background-image: url('https://www.w3schools.com/w3images/forestbridge.jpg'); /* Background image */
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+            color: #333;
+        }
+        .container {
+            background-color: rgba(255, 255, 255, 0.8); /* White background with transparency */
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .nav-tabs .nav-link {
+            color: #555;
+            background-color: #f8f9fa;
+            border-color: #ddd;
+        }
+        .nav-tabs .nav-link.active {
+            color: #fff;
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .list-group-item {
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .btn-warning {
+            background-color: #ffc107;
+            border-color: #ffc107;
+        }
+        .btn-success {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+        .input-group {
+            margin-top: 10px;
+        }
+        .border-rounded {
+            border-radius: 10px;
+        }
+        #chatbox {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+        }
+
+        .logout-tab {
+            background-color: #f44336;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 14px;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+        }
+        .logout-tab:hover {
+            background-color: #d32f2f;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+</head>
+<body>
+<!-- 🔔 Floating Notifications -->
+<div class="dropdown position-fixed end-0 me-3" style="z-index: 1080; top: 90px; position: fixed;">
+  <button class="btn btn-primary position-relative" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+    <i class="bi bi-bell-fill"></i>
+    {% if notifications %}
+      <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+        {{ notifications|length }}
+      </span>
+    {% endif %}
+  </button>
+
+  <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="notificationDropdown" style="width: 350px; max-height: 400px; overflow-y: auto;">
+    {% if notifications %}
+      {% for note in notifications %}
+        <li class="dropdown-item {% if not note.is_read %}bg-light{% endif %}">
+          <a href="{% url 'mark_notification_read' note.id %}" class="text-decoration-none text-dark d-block">
+             {% if note.notification_type == 'patent' %}
+        📝 Patent: 
+            {% elif note.notification_type == 'research' %}
+                📚 Research: 
+            {% elif note.notification_type == 'project' %}
+                💼 Project: 
+            {% elif note.notification_type == 'enterprenuer' %}
+                🗂️ Enterprenuer: 
+            {% elif note.notification_type == 'consultancy' %}
+                🧑‍💼 Consultancy: 
+            {% elif note.notification_type == 'innovation' %}
+                💡 Innovation: 
+            {% else %}
+                📚 Research:
+            {% endif %}
+            {{ note.message|safe }}
+          </a>
+          <small class="text-muted d-block">{{ note.timestamp|date:"M d, Y H:i" }}</small>
+          <hr class="my-1">
+        </li>
+      {% endfor %}
+    {% else %}
+      <li class="dropdown-item text-muted text-center">🎉 No new notifications</li>
+    {% endif %}
+  </ul>
+</div>
+
+
+    <div class="container mt-4">
+        <h2 class="text-center mb-4">Welcome, RC Convener {{ user.first_name }} {{ user.last_name }}</h2>
+        
+        <a href="{% url 'logout' %}" class="logout-tab">Logout</a>
+                
+              
+
+        <!-- Tabs Navigation -->
+        <ul class="nav nav-tabs d-flex justify-content-start align-items-center" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <a class="nav-link active" id="research-tab" data-bs-toggle="tab" href="#research" role="tab" aria-controls="research" aria-selected="true">Research Proposals</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="patent-tab" data-bs-toggle="tab" href="#patent" role="tab" aria-controls="patent" aria-selected="false">Patent Proposals</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="project-tab" data-bs-toggle="tab" href="#project" role="tab" aria-controls="project" aria-selected="false">Project Proposals</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="proposal_p-tab" data-bs-toggle="tab" href="#proposal_p" role="tab" aria-controls="proposal_p" aria-selected="false">Proposal (P-Load)</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="consultancy-tab" data-bs-toggle="tab" href="#consultancy" role="tab" aria-controls="consultancy" aria-selected="false">Consultancy(C-Load)</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="enterprenuer-tab" data-bs-toggle="tab" href="#enterprenuer" role="tab" aria-controls="enterprenuer" aria-selected="false">Enterprenuer(E-Load)</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="innovation-tab" data-bs-toggle="tab" href="#inovation" role="tab" aria-controls="inovation" aria-selected="false">Inovation(I-Load)</a>
+            </li>
+            <li class="nav-item dropdown">
+                <button class="btn btn-info dropdown-toggle nav-link" type="button" id="viewDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    Proof Links
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="viewDropdown">
+                    <li><a class="dropdown-item" href="{% url 'view_all_research_proposals' %}">View All Proofs</a></li>
+                  
+                </ul>
+            </li>
+        </ul>
+        <div class="row mt-4">
+            <!-- Actions Section -->
+            <div class="col-md-12 mb-4">
+                <h3>Actions</h3>
+                <div class="d-grid gap-2 d-md-block">
+
+                    <button id="send_to_dept_drc" class="btn btn-primary me-2">Send to Dept DRC</button>
+                    
+                   <button id="send_to_other_dept_drc" type="button" class="btn btn-warning">
+                     Send to Other Dept DRC's
+                    </button>
+                    <div class="modal fade" id="selectOtherDeptModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+
+                        <div class="modal-header">
+                            <h5>Select Other Department DRC</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+
+                        <div class="modal-body">
+                            <label>Select DRC(s):</label>
+                            <select id="otherDeptDropdown" multiple class="form-control"></select>
+                            <small class="text-muted">You can select one or more DRCs.</small>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button id="confirmOtherDeptSend" class="btn btn-success">Send</button>
+                            <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        </div>
+
+                        </div>
+                    </div>
+                    
+                    </div>
+
+
+                
+                    <button id="generate_rc_id" class="btn btn-success">Generate RC_ID</button>
+                    <button id="send_to_research_dean" class="btn btn-info">Send to Research Dean</button>
+
+                    <a href="{% url 'export_all_data_excel' %}" class="btn btn-success">⬇️ Export All Data (Excel)</a>
+            <button>
+                <a href="https://accounts.google.com/InteractiveLogin/signinchooser?continue=https%3A%2F%2Fmail.google.com%2Fmail%2F&emr=1&ltmpl=default&ltmplcache=2&osid=1&passive=true&rm=false&scc=1&service=mail&ss=1&ifkv=AXH0vVt1-lphv98P69_lWpNQ9wRJiO0gBSPUQM27DzWY3q-t43NMX7NpM-mD2WjOOUfe0FXTL3clNA&ddm=1&flowName=GlifWebSignIn&flowEntry=ServiceLogin" target="_blank">Send Email</a>
+              
+            </button>
+                </div>
+                
+            </div>
+        </div>
+        
+                <div class="mb-3">
+                    <label><b>Filter by Branch:</b></label>
+
+                    <select id="departmentFilter" class="form-select w-25">
+                        <option value="">All Branches</option>
+                        <option value="CSE">CSE</option>
+                        <option value="ISE">ISE</option>
+                        <option value="ECE">ECE</option>
+                        <option value="ME">ME</option>
+                        <option value="CIVIL">CIVIL</option>
+                    </select>
+                </div>
+        <!-- Tabs Content -->
+        <div class="tab-content mt-3" id="myTabContent">
+            <div class="tab-pane fade show active" id="research" role="tabpanel" aria-labelledby="research-tab">
+                <h3>Research Proposals Submitted by Faculty</h3>
+            
+
+                <ul class="list-group" id="proposals">
+                    <!-- Proposals will be dynamically loaded here -->
+                </ul>
+                <button id="load_more_proposals" class="btn btn-primary mt-3" data-page="1">Load More</button>
+            </div>
+            
+            <button id="send_to_research_dean" class="btn btn-info">Send to Research Dean</button>
+
+            <div class="tab-pane fade" id="patent" role="tabpanel" aria-labelledby="patent-tab">
+
+                <h3>Patent Proposals Submitted by Faculty</h3>
+                <ul class="list-group" id="patent_list">
+                    <!-- Patents will be dynamically loaded here -->
+                </ul>
+               
+
+            </div>
+            <div class="tab-pane fade" id="project" role="tabpanel" aria-labelledby="project-tab">
+                <h3>Project Proposals Submitted by Faculty</h3>
+                <ul class="list-group" id="project">
+                    <!-- Projects will be dynamically loaded here -->
+                </ul>
+            </div>
+            <div class="tab-pane fade" id="proposal_p" role="tabpanel" aria-labelledby="proposal_p-tab">
+                <h3>proposal(p load proof) Submitted by Faculty</h3>
+                <ul class="list-group" id="proposal_p_list">
+                    <!-- P  will be dynamically loaded here -->
+                </ul>
+            </div>
+    
+            <div class="tab-pane fade" id="consultancy" role="tabpanel" aria-labelledby="consultancy-tab">
+                <h3>Consultancy(C load proof) Submitted by Faculty</h3>
+                <ul class="list-group" id="consultancy">
+                    <!-- P  will be dynamically loaded here -->
+                </ul>
+            </div>
+    
+            <div class="tab-pane fade" id="enterprenuer" role="tabpanel" aria-labelledby="enterprenuer-tab">
+                <h3>Enterprenuer(E load proof) Submitted by Faculty</h3>
+                <ul class="list-group" id="enterprenuer">
+                    <!-- E load  will be dynamically loaded here -->
+                </ul>
+            </div>
+            <div class="tab-pane fade" id="inovation" role="tabpanel" aria-labelledby="inovation-tab">
+                 <ul id="innovation_list" class="list-group">
+                 <!-- Innovation items will be dynamically loaded here -->
+                    </ul>
+            </div>
+
+        </div>
+
+        <!-- Chat Section -->
+        <select id="chat-user">
+            <option disabled selected>Select a user</option>
+            {% for user in users %}
+              <option value="{{ user.id }}">{{ user.username }}</option>
+            {% endfor %}
+          </select>
+          
+          <div id="chat-box" style="height: 250px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; margin-top: 10px;"></div>
+          
+          <input type="text" id="message" placeholder="Type a message">
+          <button onclick="sendMessage()">Send</button>
+          
+          
+          <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+          <script>
+              let receiverId = null;
+          
+              $("#chat-user").on('change', function() {
+                  receiverId = $(this).val();
+                  fetchMessages();
+              });
+          
+              function sendMessage() {
+                  const msg = $("#message").val();
+                  if (!receiverId) {
+                      alert("Select a user first.");
+                      return;
+                  }
+          
+                  $.post("{% url 'send_message' %}", {
+                      receiver_id: receiverId,
+                      message: msg,
+                      csrfmiddlewaretoken: '{{ csrf_token }}'
+                  }, function(data) {
+                      $("#message").val('');
+                      fetchMessages();
+                  });
+              }
+          
+              function fetchMessages() {
+                  if (!receiverId) return;
+          
+                  $.post("{% url 'get_messages' %}", {
+                      user2_id: receiverId,
+                      csrfmiddlewaretoken: '{{ csrf_token }}'
+                  }, function(data) {
+                      $("#chat-box").empty();
+                      data.forEach(msg => {
+                          $("#chat-box").append(`<div><strong>${msg.sender__username}</strong>: ${msg.message}</div>`);
+                      });
+                  });
+              }
+          
+              setInterval(fetchMessages, 3000);
+          </script>
+    <script>
+        $(document).ready(function () {
+            let selectedDRC = null; // Store selected DRC ID
+        
+            // Handle Dropdown Selection (Store Selected DRC ID)
+            $(document).on('click', '.drc-option', function (e) {
+                e.preventDefault();
+                selectedDRC = $(this).data('id'); // Store selected DRC ID
+                $('#selected_drc_btn').text($(this).text()); // Update button text
+                
+            });
+
+            
+                $('#send_to_research_dean').click(function () {
+                var selectedPatents = [];
+
+                $('.patent_checkbox:checked').each(function () {
+                    selectedPatents.push($(this).val());
+                });
+
+                if (selectedPatents.length === 0) {
+                    alert("Please select at least one I-Load Patent!");
+                    return;
+                }
+
+                $.ajax({
+                    url: "/send_to_research_dean/",
+                    type: "POST",
+                    data: {
+                        'patent_ids': selectedPatents,
+                        csrfmiddlewaretoken: '{{ csrf_token }}'
+                    },
+                    success: function (response) {
+                        alert("Patents sent to Research Dean!");
+                        loadPatentsRD();
+                    },
+                    error: function () {
+                        alert("Error sending to Research Dean");
+                    }
+                });
+            });
+
+
+            $("#send_to_other_dept_drc").click(function(){
+                
+                $("#otherDeptDropdown").empty();
+
+                $.get("{% url 'get_other_dept_drcs' %}", function(response){
+                
+                    response.drc_list.forEach(function(drc){
+                        $("#otherDeptDropdown").append(
+                            `<option value="${drc.id}">${drc.name} (${drc.department})</option>`
+                        );
+                    });
+
+
+            var modal = new bootstrap.Modal(document.getElementById("selectOtherDeptModal"));
+            modal.show();
+                });
+            });
+
+            $("#confirmOtherDeptSend").click(function(){
+                let selectedDRCs = $("#otherDeptDropdown").val();
+                let selectedProposals = [];
+
+                $(".proposal_checkbox:checked").each(function(){
+                    selectedProposals.push($(this).val());
+                });
+
+                if(selectedDRCs.length === 0){
+                    alert("⚠ Please select at least one DRC.");
+                    return;
+                }
+
+                if(selectedProposals.length === 0){
+                    alert("⚠ Please select proposals first.");
+                    return;
+                }
+
+                $.ajax({
+                    url: "{% url 'send_to_other_dept_drc' %}",
+                    type: "POST",
+                    data: {
+                        'proposal_ids[]': selectedProposals,
+                        'drc_ids[]': selectedDRCs,
+                        csrfmiddlewaretoken: "{{ csrf_token }}"
+                    },
+                    success: function(res){
+                        alert("✅ Proposal successfully sent to selected DRC(s)!");
+                        bootstrap.Modal.getInstance(document.getElementById('selectOtherDeptModal')).hide();
+                        location.reload();
+                    }
+                });
+            });
+
+        });
+
+    </script>
+    <script>
+       $(document).ready(function () {
+    $('.nav-tabs .nav-link').on('click', function () {
+        let activeTab = $(this).attr('href'); // "#research", "#proposal_p", "#patent"
+        $('#send_to_research_dean').hide();
+
+        if (activeTab === '#research') {
+            // Only Research should show all 3 buttons
+            $('#send_to_dept_drc, #send_to_other_dept_drc, #generate_rc_id').show();
+
+        }
+        else if (activeTab === '#proposal_p' || activeTab === '#patent') {
+            // These tabs should show only 2 buttons
+            $('#send_to_dept_drc, #generate_rc_id').show();
+            $('#send_to_other_dept_drc').hide();  // FIX
+            $('#send_to_research_dean').show();
+        }
+        else {
+            // All other tabs hide everything
+            $('#send_to_dept_drc, #send_to_other_dept_drc, #send_to_research_dean').hide();
+        }
+    });
+});
+
+        
+        
+        $('#delete_all_btn').click(function() {
+            $.ajax({
+                url: '{% url "delete_all_messages" %}',
+                method: 'POST',
+                data: {
+                    'csrfmiddlewaretoken': '{{ csrf_token }}',
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert('All messages deleted.');
+                        $('#chat_display').empty();
+                    } else {
+                        alert('An error occurred.');
+                    }
+                },
+                error: function() {
+                    alert('An error occurred.');
+                }
+            });
+        });
+        
+        
+    </script>
+
+<script>
+    document.getElementById('send_message').addEventListener('click', function () {
+        const message = document.getElementById('chat_message').value.trim();
+    
+        if (message === '') {
+            alert('Please type a message before sending.');
+            return;
+        }
+    
+        // Clear the input field
+        document.getElementById('chat_message').value = '';
+    
+        // Example: Send the message to the server using Fetch API
+        fetch('/send_message/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken') // Include CSRF token for Django
+            },
+            body: JSON.stringify({ message: message })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update chat content dynamically
+                const chatContent = document.getElementById('chat_content');
+                chatContent.innerHTML += `<div><strong>You:</strong> ${message}</div>`;
+                chatContent.scrollTop = chatContent.scrollHeight; // Auto-scroll to the bottom
+            } else {
+                alert('Failed to send the message. Please try again.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+        });
+    });
+    
+    // Function to get CSRF token (Django-specific)
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        
+        $(document).ready(function() {
+            loadProposals();
+            loadpatents();
+            loadChatContent();
+            loadprojects();
+            loadproposal_p();
+            loadconsultancy();
+            loadenterprenuer();
+            loadinnovation();
+            $('#send_to_dept_drc').click(function() {
+                sendToDeptDRC();
+            });
+
+            $('#generate_rc_id').click(function () {
+                var selectedProposals = [];
+                var selectedPatents = [];
+                var selectedProject = [];
+                var selectedProposal_p = [];
+                var selectedConsultancy = [];
+                var selectedEnterprenuer = [];
+                var selectedInnovation = [];
+            
+                $('.proposal_checkbox:checked').each(function () {
+                    selectedProposals.push($(this).val());
+                });
+                $('.patent_checkbox:checked').each(function () {
+                    selectedPatents.push($(this).val());
+                });
+                $('.project_checkbox:checked').each(function () {
+                    selectedProject.push($(this).val());
+                });
+                $('.proposal_p_checkbox:checked').each(function () {
+                    selectedProposal_p.push($(this).val());
+                });
+                $('.consultancy_checkbox:checked').each(function () {
+                    selectedConsultancy.push($(this).val());
+                });
+                $('.enterprenuer_checkbox:checked').each(function () {
+                    selectedEnterprenuer.push($(this).val());
+                });
+                $('.innovation_checkbox:checked').each(function () {
+                    selectedInnovation.push($(this).val());
+                });
+            
+                if (
+                    selectedProposals.length === 0 &&
+                    selectedPatents.length === 0 &&
+                    selectedProject.length === 0 &&
+                    selectedProposal_p.length === 0 &&
+                    selectedConsultancy.length === 0 &&
+                    selectedEnterprenuer.length === 0 &&
+                    selectedInnovation.length === 0
+                ) {
+                    alert('No proposal checkbox is selected!');
+                    return;
+                }
+            
+                $.ajax({
+                    url: "{% url 'generate_rc_id' %}",
+                    type: 'POST',
+                    data: {
+                        'proposal_ids': selectedProposals,
+                        'patent_ids': selectedPatents,
+                        'project_ids': selectedProject,
+                        'proposal_p_ids': selectedProposal_p,
+                        'consultancy_ids': selectedConsultancy,
+                        'enterprenuer_ids': selectedEnterprenuer,
+                        'innovation_ids': selectedInnovation,
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    success: function (response) {
+                        if (response.status === 'success') {
+                            const edits = [];
+
+                            response.rc_ids.forEach(function (originalRCID) {
+
+                                const edited = prompt(
+                                    "Generated RC_ID: " + originalRCID + "\nEdit if needed:",
+                                    originalRCID
+                                );
+
+                                // If user clicks cancel keep original
+                                const final_id = edited ? edited : originalRCID;
+
+                                edits.push({
+                                    old: originalRCID,
+                                    new: final_id
+                                });
+
+                            });
+            
+                            $.ajax({
+                                url: '/update_rc_id/',
+                                type: 'POST',
+                                data: {
+                                    rc_id_updates: JSON.stringify(edits),
+                                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                                },
+                                success: function (resp) {
+                                    alert(resp.message);
+                                },
+                                error: function () {
+                                    alert('Error updating RC_IDs.');
+                                }
+                            });
+
+                        } 
+                        else if (response.status === 'error') {
+                            alert('Error: ' + (response.message || 'RC_ID already generated for selected proposal.'));
+                        } 
+                        else {
+                            alert('Unexpected response from server.');
+                        }
+                    },
+                    error: function (xhr) {
+                        alert('Error generating RC_ID.');
+                    }
+                });
+            });
+            
+
+            $('#send_message').click(function() {
+                var message = $('#chat_message').val();
+                if (message) {
+                    // Implement AJAX call to send chat message
+                }
+            });
+
+           // let currentPage = 1; // Track the current page
+
+            function loadProposals() {
+                
+                         var department = $('#departmentFilter').val();
+
+                $.ajax({
+                    url: '{% url "load_proposals" %}',
+                    type: 'GET',
+
+                    data: {
+                        department: department   // ✅ SEND FILTER
+                    },
+
+                    success: function(response) {
+
+                        $('#proposals').html('');   // clear previous list
+
+                        if (response.proposals.length > 0) {
+
+                            var proposalsHtml = '';
+                            response.proposals.forEach(function(proposal) {
+                                proposalsHtml += `
+                                    <li class="list-group-item">
+
+                                    <input type="checkbox" class="form-check-input me-2 proposal_checkbox" value="${proposal.id}">
+
+                                    <strong style="font-size:16px;">${proposal.title}</strong><br>
+
+                                    <small><strong>Faculty Department:</strong></small> ${proposal.user_profile__department}<br>
+
+                                    <small><strong>Research Type:</strong></small> ${proposal.research_type}<br>
+
+                                    <small><strong>Abstract:</strong></small> ${proposal.abstract}<br>
+
+                                    <small><strong>Keywords:</strong></small> <strong>${proposal.keywords}</strong><br>
+
+                                    <small><strong>Status:</strong></small> ${proposal.status}<br>
+
+
+                                    <small><strong>DRC Comment:</strong></small> ${proposal.dcr_comment}<br>
+
+                                    <small><strong>Paper PDF:</strong></small>
+                                    ${proposal.full_paper_url ? `<a href="${proposal.full_paper_url}" class="btn btn-link p-0" download>Download Full Paper</a>` : ''}
+                                    <br>
+
+                                    <small><strong>Plagiarism PDF:</strong></small>
+                                    ${proposal.plagiarism_url ? `<a href="${proposal.plagiarism_url}" download>Download Plagiarism Report</a>` : ''}
+
+                                    </li>
+
+                                `;
+                            });
+
+                            // Append new proposals to the list
+                            $('#proposals').append(proposalsHtml);
+
+                            // Update current page if there are more proposals
+                            if (response.has_next) {
+                                $('#load_more_proposals').data('page', response.next_page);
+                            } else {
+                                // Hide the "Load More" button if no more proposals
+                                $('#load_more_proposals').hide();
+                            }
+                        }
+                    },
+                    error: function(xhr) {
+                        alert('Error loading proposals!');
+                    }
+                });
+            }
+            $('#departmentFilter').change(function () {
+                $('#proposals').html('');   // clear old data
+                loadProposals();            // reload filtered data
+            });
+            // Event listener for the "Load More" button
+            $(document).on('click', '#load_more_proposals', function() {
+                let page = $(this).data('page'); // Get the next page number
+                load_more_proposals(page); // Load proposals for the next page
+                $(this).data('page', page + 1);
+            });
+
+            function load_more_proposals(page) {
+                var department = $('#departmentFilter').val();
+                // Perform AJAX request to fetch the next set of proposals
+                $.ajax({
+                    url: '{% url "load_proposals" %}', // URL of the Django view
+                    type: 'GET',
+                    data: {
+                            page: page,
+                            department: department   // ✅ SEND FILTER AGAIN
+                        }, 
+                        
+                        // Send the current page number
+                    success: function (response) {
+                        if (response.proposals.length > 0) {
+                            let proposalsHtml = '';
+            
+                            // Build the HTML for each proposal
+                            response.proposals.forEach(function (proposal) {
+                                proposalsHtml += `
+                                    <li class="list-group-item">
+                                        <input type="checkbox" class="form-check-input me-2 proposal_checkbox" value="${proposal.id}">
+                                        <strong>${proposal.title}</strong><br>
+                                        <small>Faculty Department:</small> ${proposal.user_profile__department}<br>
+                                        <small>Research Type:</small> ${proposal.research_type}<br>
+                                        <small>Abstract:</small> ${proposal.abstract}<br>
+                                        <small>Keywords:</small> ${proposal.keywords}<br>
+                                        <small>Status:</small> ${proposal.status}<br>
+                                        <small>Other Dept DRC Status:</small> ${proposal.odeptstatus || 'Pending'}<br>
+
+                                       <small>DRC Comment:</small> ${proposal.dcr_comment}<br>                              
+                                        <small>Paper PDF:</small>${proposal.full_paper_url ? `<a href="${proposal.full_paper_url}" class="btn btn-link p-0" download>Download Full Paper</a>` : ''}<br>
+                                        <small>Plugnarism PDF:</small>${proposal.plagiarism_url ? `<a href="${proposal.plagiarism_url}" download>Download Plagiarism Report</a>` : ''}
+
+                                        </li>
+                                `;
+                            });
+            
+                            // Append the new proposals to the existing list
+                            $('#proposals').append(proposalsHtml);
+            
+                            // Update the "Load More" button's data-page attribute
+                            $('#load_more_proposals').attr('data-page', page + 1);
+            
+                            // Hide the button if there are no more pages
+                            if (!response.has_next) {
+                                $('#load_more_proposals').hide();
+                            }
+                        } else {
+                            // Hide the button if no proposals are returned
+                            $('#load_more_proposals').hide();
+                        }
+                    },
+                    error: function () {
+                        alert('Error loading more proposals!');
+                    }
+                });
+            }
+            $('#departmentFilter').change(function () {
+
+                        $('#proposals').html('');
+
+                        $('#load_more_proposals')
+                            .data('page', 1)   // ✅ reset pagination
+                            .show();
+
+                        loadProposals();
+                        loadpatents();
+                        loadprojects();
+                        loadproposal_p();
+                        loadconsultancy();
+                        loadenterprenuer();
+                        loadinnovation();
+                    });
+            function loadpatents() {
+
+    // ✅ Get selected department
+    var dept = $("#departmentFilter").val();
+
+    $.ajax({
+        url: '{% url "load_patents" %}',
+        type: 'GET',
+
+        // ✅ SEND department to Django
+        data: {
+            department: dept
+        },
+
+        success: function(response) {
+            var patentsHtml = '';
+
+            response.patent.forEach(function(patent) {
+                patentsHtml += `
+                    <li class="list-group-item">
+
+                        <input type="checkbox"
+                               class="form-check-input me-2 patent_checkbox"
+                               value="${patent.id}">
+
+                        <strong>${patent.title}</strong><br>
+
+                        <small><b>Faculty Name:</b>
+                        ${patent.first_name} ${patent.last_name}</small><br>
+
+                        <small><b>Department:</b>
+                        ${patent.department}</small><br>
+
+                        <small><b>Patent Type:</b>
+                        ${patent.patent_type}</small><br>
+
+                        <small><b>Abstract:</b>
+                        ${patent.abstract}</small><br>
+
+                        <small><b>Related Work:</b></small>
+                        ${patent.related_work}<br>
+
+                        <small><b>Patent Status:</b>
+                        ${patent.status}</small><br>
+                        <small><b>DRC Comment:</b></small>
+                        ${patent.dcr_comment}<br>
+
+                        <p><strong>
+                        Research Dean Comment:
+                        ${patent.dean_comment ?? "No Comment"}
+                        </strong></p>
+
+                        ${
+                            patent.full_pdf
+                            ? `<a href="${patent.full_pdf}"
+                                  class="btn btn-link p-0"
+                                  target="_blank">
+                                  Download Full Paper (PDF)
+                               </a>`
+                            : '<small>No PDF available</small>'
+                        }
+
+                    </li>
+                `;
+            });
+
+            $('#patent_list').html(patentsHtml);
+        },
+
+        error: function() {
+            alert('Error loading patents!');
+        }
+    });
+}                       
+
+            function loadprojects() {
+
+    // ✅ GET SELECTED DEPARTMENT
+    var department = $('#departmentFilter').val();
+
+    $.ajax({
+        url: '{% url "load_projects" %}',
+        type: 'GET',
+
+        // ✅ SEND TO DJANGO
+        data: {
+            department: department
+        },
+
+        success: function(response) {
+
+            console.log(response);
+
+            var projectsHtml = '';
+
+            response.projects.forEach(function(project) {
+
+                projectsHtml += `
+                    <li class="list-group-item">
+
+                        <input type="checkbox"
+                               class="form-check-input me-2 project_checkbox"
+                               value="${project.id}">
+
+                        <strong>${project.title}</strong><br>
+
+                        <small><b>Abstract:</b>
+                        ${project.abstract}</small><br>
+
+                        <small><b>Status:</b>
+                        ${project.status}</small><br>
+
+                        <small><b>DRC Comment:</b>
+                        ${project.dcr_comment}</small><br>
+
+                        ${
+                          project.proposal_form_url
+                          ? `<a href="${project.proposal_form_url}"
+                               class="btn btn-link p-0"
+                               target="_blank">
+                               Download Full Paper
+                             </a>`
+                          : '<small>No PDF Available</small>'
+                        }
+
+                    </li>
+                `;
+            });
+
+            $('#project').html(projectsHtml);
+        },
+
+        error: function() {
+            alert('Error loading projects!');
+        }
+    });
+}
+           function loadproposal_p() {
+
+    // ✅ Get selected department
+    var department = $('#departmentFilter').val();
+
+    $.ajax({
+        url: '{% url "load_proposal_p" %}',
+        type: 'GET',
+
+        // ✅ SEND FILTER TO DJANGO
+        data: {
+            department: department
+        },
+
+        success: function(response) {
+
+            var proposal_pHtml = '';
+
+            response.proposal_p.forEach(function(proposal_p) {
+
+                proposal_pHtml += `
+                    <li class="list-group-item">
+
+                        <small>
+                            <b>Submitted by:</b>
+                            ${proposal_p.faculty_name}
+                            From the department of
+                            <b>${proposal_p.department}</b>
+                        </small><br>
+
+                        <input type="checkbox"
+                               class="form-check-input me-2 proposal_p_checkbox"
+                               value="${proposal_p.id}">
+
+                        <strong>
+                            Title : ${proposal_p.proposal_title}
+                        </strong><br>
+
+                        <b>Document-1:</b>
+                        ${
+                            proposal_p.proof_pdf_1
+                            ? `<a href="${proposal_p.proof_pdf_1}"
+                                 class="btn btn-link p-0"
+                                 target="_blank">
+                                 Download Full Paper 1 (PDF)
+                               </a>`
+                            : '<small>No PDF available</small>'
+                        }
+                        <br>
+
+                        <b>Document-2:</b>
+                        ${
+                            proposal_p.proof_pdf_2
+                            ? `<a href="${proposal_p.proof_pdf_2}"
+                                 class="btn btn-link p-0"
+                                 target="_blank">
+                                 Download Full Paper 2 (PDF)
+                               </a>`
+                            : '<small>No PDF available</small>'
+                        }
+
+                    </li>
+                `;
+            });
+
+            $('#proposal_p_list').html(proposal_pHtml);
+        },
+
+        error: function() {
+            alert('Error loading proposals!');
+        }
+    });
+}
+            function loadconsultancy() {
+                 var department = $('#departmentFilter').val();
+
+                $.ajax({
+                    url: '{% url "load_consultancy" %}',
+                    type: 'GET',
+
+                     data: {
+                         department: department
+                            },
+                    success: function(response) {
+                        var consultancyHtml = '';
+            
+                        response.consultancy.forEach(function(consultancy) {
+                            consultancyHtml += `
+                                <li class="list-group-item">
+                                    <small><b>Submitted by: </b>${consultancy.faculty_name} From the department of <b> ${consultancy.department}</b></small><br>
+
+                                    <input type="checkbox" class="form-check-input me-2 consultancy_checkbox" value="${consultancy.id}">
+                                    <strong> Title : ${consultancy.consultancy_title}</strong><br>
+            
+                                    <b> Document-1: </b>${consultancy.proof_pdf_1 ? 
+                                        `<a href="${consultancy.proof_pdf_1}" class="btn btn-link p-0" download target="_blank">Download(PDF)</a>` 
+                                        : '<small>No PDF available</small>'}
+                                    <br>
+                                  
+                                </li>
+                            `;
+                        });
+            
+                        $('#consultancy').html(consultancyHtml);
+                    },
+                    error: function(xhr) {
+                        alert('Error loading proposals!');
+                    }
+                });
+            }
+
+            function loadenterprenuer() {
+                 var department = $('#departmentFilter').val();
+
+                $.ajax({
+                    url: '{% url "load_enterprenuer" %}',
+                    type: 'GET',
+
+                 data: {
+                         department: department
+                            },
+
+                    success: function(response) {
+                        var enterprenuerHtml = '';
+            
+                        response.enterprenuer.forEach(function(enterprenuer) {
+                            enterprenuerHtml += `
+                                <li class="list-group-item">
+                                    <small><b>Submitted by: </b>${enterprenuer.faculty_name} From the department of <b> ${enterprenuer.department}</b></small><br>
+
+                                    <input type="checkbox" class="form-check-input me-2 enterprenuer_checkbox" value="${enterprenuer.id}">
+                                    <strong> Title : ${enterprenuer.enterprenuer_title}</strong><br>
+            
+                                    <b> Document-1: </b>${enterprenuer.proof_pdf_1 ? 
+                                        `<a href="${enterprenuer.proof_pdf_1}" class="btn btn-link p-0" download target="_blank">Download(PDF)</a>` 
+                                        : '<small>No PDF available</small>'}
+                                    <br>
+                                  
+                                </li>
+                            `;
+                        });
+            
+                        $('#enterprenuer').html(enterprenuerHtml);
+                    },
+                    error: function(xhr) {
+                        alert('Error loading enterprenuer data!');
+                    }
+                });
+            }
+
+            function loadinnovation() {
+                 var department = $('#departmentFilter').val();
+                $.ajax({
+                    url: '{% url "load_innovation" %}',
+                    type: 'GET',
+
+                     data: {
+                         department: department
+                            },
+                    success: function(response) {
+                    
+                       
+                        var innovationHtml = '';
+            
+                        response.innovation.forEach(function(innovation) {
+                            innovationHtml += `
+                                <li class="list-group-item">
+                                    <small><b>Submitted by: </b>${innovation.faculty_name} From the department of <b> ${innovation.department}</b></small><br>
+
+                                    <input type="checkbox" class="form-check-input me-2 innovation_checkbox" value="${innovation.id}">
+                                    <strong> Title : ${innovation.innovation_title}</strong><br>
+            
+                                    <b> Document-1: </b>${innovation.proof_pdf_1 ? 
+                                        `<a href="${innovation.proof_pdf_1}" class="btn btn-link p-0" download target="_blank">Download(PDF)</a>` 
+                                        : '<small>No PDF available</small>'}
+                                     <br>
+                                  
+                                </li>
+                            `;
+                        });
+                       
+                        $('#innovation_list').html(innovationHtml);
+                       
+                    },
+                    error: function(xhr) {
+                        alert('Error loading innovation data!');
+                    }
+                });
+            }
+
+            function loadChatContent() {
+                $.ajax({
+                    url: "{% url 'load_chat' %}",
+                    type: 'GET',
+                    success: function(response) {
+                        $('#chat_content').html(response);
+                    },
+                    error: function(xhr) {
+                        alert('Error loading chat content!');
+                    }
+                });
+            }
+
+            function sendToDeptDRC() {
+                var selectedProposals = [];
+                var selectedProposal_p = [];
+                var selectedPatents = [];
+                var selectedProjects = [];
+                // Collect selected proposals
+                $('.proposal_checkbox:checked').each(function() {
+                    selectedProposals.push($(this).val());
+                });
+                $('.patent_checkbox:checked').each(function() {
+                    selectedPatents.push($(this).val());
+                });
+                $('.proposal_p_checkbox:checked').each(function() {
+                    selectedProposal_p.push($(this).val());
+                });
+                console.log("Patents:", selectedPatents);
+
+                if (selectedProposals.length === 0 && selectedPatents.length === 0 && selectedProjects.length === 0 && selectedProposal_p.length=== 0) {
+                    alert('No proposal or patent or Project selected!');
+                    return;
+                }
+            
+                $.ajax({
+                    url: "{% url 'send_to_dept_drc' %}",
+                    type: 'POST',
+                    traditional: true,  // ensures array is sent properly
+                    data: {
+                        'proposal_ids': selectedProposals,
+                        'proposal_p_ids': selectedProposal_p,
+                        'patent_ids':selectedPatents,
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            alert('Proposals sent to Department DRC!');
+                        } else {
+                            alert('Error sending data to DRC!');
+                        }
+                    },
+                    error: function(xhr) {
+                        alert('Error sending data to DRC!');
+                    }
+                });
+            }
+            
+            function sendToOtherDeptDRCs() {
+                var selectedProposals = [];
+                $('.proposal_checkbox:checked').each(function() {
+                    selectedProposals.push($(this).val());
+                });
+
+                if (selectedProposals.length === 0) {
+                    alert('No proposal selected!');
+                    return;
+                }
+
+                $.ajax({
+                    url: "{% url 'send_to_other_dept_drc' %}",
+                    type: 'POST',
+                    data: {
+                        'proposal_ids': selectedProposals,
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            alert('Proposals sent to Other Department DRC!');
+                        } else {
+                            alert('Error sending proposals!');
+                        }
+                    },
+                    error: function(xhr) {
+                        alert('Error sending proposals!');
+                    }
+                });
+            }
+        });
+    </script>
+      
+</body>
+</html>

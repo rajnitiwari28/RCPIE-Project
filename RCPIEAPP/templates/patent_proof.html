@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Patent Proof</title>
+    <style>
+        /* Background Styling */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #4e54c8, #8f94fb);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Form Container */
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+
+        /* Heading */
+        h2 {
+            color: #4e54c8;
+            margin-bottom: 20px;
+        }
+
+        /* Input Fields */
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        /* Submit Button */
+        .btn-submit {
+            width: 100%;
+            background-color: #4e54c8;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-submit:hover {
+            background-color: #3b42a0;
+            transform: scale(1.05);
+        }
+
+        /* Alert Message Styling */
+        .message-box {
+            padding: 12px;
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Submit Your Patent Proof</h2>
+
+    <!-- Alert Messages -->
+    {% if messages %}
+        <div class="message-box" id="alertBox">
+            {% for message in messages %}
+                {{ message }}
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Patent Proof Form -->
+    <form method="post">
+        {% csrf_token %}
+
+        <!-- Patent Title Dropdown -->
+        <label><strong>Select Patent:</strong></label>
+        <select name="patent_id" id="patentSelect" required>
+            <option value="">Select Patent</option>
+            {% for p in patents %}
+                <option value="{{ p.id }}" data-rcid="{{ p.rc_id }}">
+                    {{ p.title }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <!-- Auto-filled RC_ID -->
+        <label><strong>Patent RC_ID:</strong></label>
+        <input type="text" id="rc_id" readonly>
+
+        <!-- Patent Type -->
+        <label><strong>Patent Type:</strong></label>
+        <select name="patent_type" required>
+            <option value="">Select Type</option>
+            {% for value, display in patent_type_choices %}
+                <option value="{{ value }}">{{ display }}</option>
+            {% endfor %}
+        </select>
+
+        <!-- Abstract -->
+        <label><strong>Patent Abstract:</strong></label>
+        <textarea name="abstract" rows="3" placeholder="Enter Abstract" required></textarea>
+
+        <!-- Patent Number -->
+        <label><strong>Patent Number:</strong></label>
+        <input type="text" name="patent_number" placeholder="Enter Patent Number" required>
+
+        <!-- Proof Link -->
+        <label><strong>Proof Link:</strong></label>
+        <input type="url" name="proof_link" placeholder="Enter Google Drive or any proof link" required>
+
+        <button type="submit" class="btn-submit">Submit</button>
+    </form>
+</div>
+
+<!-- JavaScript -->
+<script>
+    // Show alert messages for 3 seconds
+    window.onload = function() {
+        let alertBox = document.getElementById("alertBox");
+        if (alertBox) {
+            alertBox.style.display = "block";
+            setTimeout(() => { alertBox.style.display = "none"; }, 3000);
+        }
+    };
+
+    // Auto-fill RC_ID based on selected patent
+    document.getElementById("patentSelect").addEventListener("change", function() {
+        let selected = this.options[this.selectedIndex];
+        let rcid = selected.getAttribute("data-rcid");
+        document.getElementById("rc_id").value = rcid || "";
+    });
+</script>
+
+</body>
+</html>

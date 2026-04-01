@@ -1,0 +1,151 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: url("{% static 'images/background.jpg' %}") no-repeat center center fixed;
+            background-size: cover;
+            height: 100vh;
+        }
+
+        .header-title {
+            background-color: black;
+            color: white;
+            text-align: center;
+            padding: 15px 0;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .login-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: calc(100vh - 80px); /* Leaving space for header */
+        }
+
+        .login-card {
+            background-color: #f0f8ff; /* Alice Blue */
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            max-width: 350px;
+            width: 100%;
+            margin-top: 60px; /* Shift down */
+        }
+        
+        /* Reduce input size */
+        .login-card input.form-control {
+            max-width: 250px;  /* smaller width */
+            height: 35px;      /* reduce height */
+            margin-left: 10px; /* small spacing after label */
+        }
+        
+        
+
+        .form-label {
+            font-weight: bold;
+            color: rgb(16, 16, 16);
+        }
+
+        .form-control {
+            height: 45px;
+        }
+
+        .logo {
+            width: 80px;
+            height: auto;
+        }
+
+        .top-left-logo {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+        }
+
+        .btn-primary {
+            width: 30%;
+            padding: 10px;
+            font-size: 16px;
+            display: block;
+            margin: 0 auto;
+        }
+        
+
+        .error-message {
+            color: red;
+            margin-bottom: 15px;
+        }
+
+        .login-footer {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .login-footer a {
+            color: rgb(242, 77, 242);
+            text-decoration: none;
+        }
+
+        .login-footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Logo -->
+    <div class="top-left-logo">
+        <img src="{% static 'images/logo.png' %}" alt="CMRIT Logo" class="logo">
+    </div>
+
+    <!-- Header -->
+    <div class="header-title">&lt;&lt;== CMRIT RCPIE TRACKER ==&gt;&gt;</div>
+
+    <!-- Login Content -->
+    <div class="login-wrapper">
+        <div class="login-card">
+
+            <h3 class="text-center mb-4">Login</h3>
+
+            {% if error %}
+                <p class="error-message text-center">{{ error }}</p>
+            {% endif %}
+
+            <form method="post" action="{% url 'login' %}">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" id="username" name="username" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" id="password" name="password" class="form-control" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Login</button>
+            </form>
+
+            <div class="login-footer mt-3">
+                <p>Don't have an account? <a href="{% url 'register' %}">Register here</a></p>
+                <p>Click here for admin login: <a href="http://127.0.0.1:8000/admin/login/?next=/admin/">Admin Login</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
