@@ -1,1 +1,1 @@
-web: gunicorn RCPIE_TRACKER.wsgi
+web: gunicorn RCPIE.wsgi
