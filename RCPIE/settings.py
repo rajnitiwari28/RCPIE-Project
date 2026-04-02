@@ -37,9 +37,6 @@ INSTALLED_APPS = [
     'widget_tweaks',
 ]
 
-
-
-
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
