@@ -8,21 +8,19 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
-#SECRET_KEY = 'django-insecure-4!g-$lh+s7inq9!g4ar)q%n*82=-inl1kq&rl+$-ri#egn0tnd'
-SECRET_KEY = os.environ.get('SECRET_KEY')
+SECRET_KEY = 'django-insecure-4!g-$lh+s7inq9!g4ar)q%n*82=-inl1kq&rl+$-ri#egn0tnd'
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['.railway.app']
+ALLOWED_HOSTS = ['*']
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
-#EMAIL_HOST_USER = 'rajni.mishra2889@gmail.com'
-#EMAIL_HOST_PASSWORD = 'zozb pofa flpy ckat'
+
+EMAIL_HOST_USER = 'rajni.mishra2889@gmail.com'
+EMAIL_HOST_PASSWORD = 'zozb pofa flpy ckat'
 
 LOGIN_URL = '/login/'  # Redirect unauthorized users to login page
 
@@ -75,18 +73,11 @@ WSGI_APPLICATION = 'RCPIE.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-import dj_database_url
-
 DATABASES = {
-    'default': dj_database_url.config(
-        default='sqlite:///' + str(BASE_DIR / 'db.sqlite3')
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 }
 
 
