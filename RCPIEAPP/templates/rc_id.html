@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>RC_ID Summary</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f4f8;
+        }
+
+        header {
+            background-color: #003366;
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items:flex-end;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        header button {
+            background-color:white;
+            border: none;
+            padding: 10px 10px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        header button a {
+            color: #003366;
+            text-decoration: none;
+        }
+
+        header button:hover {
+            background-color: #e6e6e6;
+        }
+
+        h3 {
+            text-align: center;
+            margin: 20px 0;
+            color: #003366;
+        }
+
+        .tab-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            border: none;
+            background-color: #0056b3;
+            color: white;
+            cursor: pointer;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .tab-btn:hover {
+            background-color: #004494;
+        }
+
+        .tab-btn.active {
+            background-color: #003366;
+        }
+
+        .tab-content {
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            display: none;
+            margin: 0 auto;
+            width: 80%;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .tab-content div {
+            margin-bottom: 10px;
+            padding: 8px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .tab-content div:last-child {
+            border-bottom: none;
+        }
+
+        strong {
+            color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>RC_ID Generation Progress</h1>
+        <button>
+            <a href="https://accounts.google.com/InteractiveLogin/signinchooser?continue=https%3A%2F%2Fmail.google.com%2Fmail%2F&emr=1&ltmpl=default&ltmplcache=2&osid=1&passive=true&rm=false&scc=1&service=mail&ss=1&ifkv=AXH0vVt1-lphv98P69_lWpNQ9wRJiO0gBSPUQM27DzWY3q-t43NMX7NpM-mD2WjOOUfe0FXTL3clNA&ddm=1&flowName=GlifWebSignIn&flowEntry=ServiceLogin" target="_blank">Send Email</a>
+          
+        </button>
+        <button>
+            <a href="{% url 'faculty_home' %}">Back to Home</a>
+        </button>
+    </header>
+
+    <h3>Generated RC_IDs</h3>
+
+    <div class="tab-buttons">
+        <button class="tab-btn active" onclick="showTab('research', this)">Research</button>
+        <button class="tab-btn" onclick="showTab('patent', this)">Patent</button>
+        <button class="tab-btn" onclick="showTab('project', this)">Project</button>
+        <button class="tab-btn" onclick="showTab('pload', this)">P Load</button>
+        <button class="tab-btn" onclick="showTab('consultancy', this)">Consultancy</button>
+        <button class="tab-btn" onclick="showTab('entrepreneur', this)">Entrepreneur</button>
+        <button class="tab-btn" onclick="showTab('innovation', this)">Innovation</button>
+    </div>
+
+    <div class="tab-content active" id="research">
+        {% for rc_id in proposals_with_rc_ids %}
+            <div><strong>Title:</strong> {{ rc_id.title }} | <strong>Status:</strong> {{ rc_id.status }} | <strong>RC_ID:</strong> {{ rc_id.rc_id }}</div>
+        {% empty %}
+            <p>No Research RC_IDs available.</p>
+        {% endfor %}
+    </div>
+
+    <div class="tab-content" id="patent">
+        {% for rc_id in patents_with_rc_ids %}
+            <div><strong>Title:</strong> {{ rc_id.title }} | <strong>Status:</strong> {{ rc_id.status }} | <strong>RC_ID:</strong> {{ rc_id.rc_id }}</div>
+        {% empty %}
+            <p>No Patent RC_IDs available.</p>
+        {% endfor %}
+    </div>
+
+    <div class="tab-content" id="project">
+        {% for rc_id in project_with_rc_ids %}
+            <div><strong>Title:</strong> {{ rc_id.title }} | <strong>Status:</strong> {{ rc_id.status }} | <strong>RC_ID:</strong> {{ rc_id.rc_id }}</div>
+        {% empty %}
+            <p>No Project RC_IDs available.</p>
+        {% endfor %}
+    </div>
+
+    <div class="tab-content" id="pload">
+        {% for rc_id in pload_rc_ids %}
+            <div><strong>Title:</strong> {{ rc_id.title }} | <strong>RC_ID:</strong> {{ rc_id.rc_id }}</div>
+        {% empty %}
+            <p>No P Load RC_IDs available.</p>
+        {% endfor %}
+    </div>
+
+    <div class="tab-content" id="consultancy">
+        {% for rc_id in consultancy_rc_ids %}
+            <div><strong>Title:</strong> {{ rc_id.title }} | <strong>RC_ID:</strong> {{ rc_id.rc_id }}</div>
+        {% empty %}
+            <p>No Consultancy RC_IDs available.</p>
+        {% endfor %}
+    </div>
+
+    <div class="tab-content" id="entrepreneur">
+        {% for rc_id in enterprenuer_rc_ids %}
+            <div><strong>Title:</strong> {{ rc_id.title }} | <strong>RC_ID:</strong> {{ rc_id.rc_id }}</div>
+        {% empty %}
+            <p>No Entrepreneur RC_IDs available.</p>
+        {% endfor %}
+    </div>
+
+    <div class="tab-content" id="innovation">
+        {% for rc_id in innovation_rc_ids %}
+            <div><strong>Title:</strong> {{ rc_id.title }} | <strong>RC_ID:</strong> {{ rc_id.rc_id }}</div>
+        {% empty %}
+            <p>No Innovation RC_IDs available.</p>
+        {% endfor %}
+    </div>
+
+    <script>
+        function showTab(tabId, button) {
+            const contents = document.querySelectorAll('.tab-content');
+            const buttons = document.querySelectorAll('.tab-btn');
+
+            contents.forEach(content => content.classList.remove('active'));
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            document.getElementById(tabId).classList.add('active');
+            button.classList.add('active');
+        }
+    </script>
+
+
+    <select id="chat-user">
+        <option disabled selected>Select a user</option>
+        {% for user in users %}
+          <option value="{{ user.id }}">{{ user.username }}</option>
+        {% endfor %}
+      </select>
+      
+      <div id="chat-box" style="height: 250px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; margin-top: 10px;"></div>
+      
+      <input type="text" id="message" placeholder="Type a message">
+          <button onclick="sendMessage()">Send</button>
+          
+          <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+          <script>
+              let receiverId = null;
+          
+              $("#chat-user").on('change', function() {
+                  receiverId = $(this).val();
+                  fetchMessages();
+              });
+          
+              function sendMessage() {
+                  const msg = $("#message").val();
+                  if (!receiverId) {
+                      alert("Select a user first.");
+                      return;
+                  }
+          
+                  $.post("{% url 'send_message' %}", {
+                      receiver_id: receiverId,
+                      message: msg,
+                      csrfmiddlewaretoken: '{{ csrf_token }}'
+                  }, function(data) {
+                      $("#message").val('');
+                      fetchMessages();
+                  });
+              }
+          
+
+      
+          function fetchMessages() {
+              if (!receiverId) return;
+      
+              $.post("{% url 'get_messages' %}", {
+                  user2_id: receiverId,
+                  csrfmiddlewaretoken: '{{ csrf_token }}'
+              }, function(data) {
+                  $("#chat-box").empty();
+                  data.forEach(msg => {
+                      $("#chat-box").append(`<div><strong>${msg.sender__username}</strong>: ${msg.message}</div>`);
+                  });
+              });
+          }
+      
+          setInterval(() => {
+            if (receiverId) {
+                fetchMessages();
+            }
+        }, 3000);
+              </script>
+</body>
+</html>
