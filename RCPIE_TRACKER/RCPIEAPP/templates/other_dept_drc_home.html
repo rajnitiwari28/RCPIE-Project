@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Other Department DRC Home</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f4f8;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #0056b3;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            background-image: url('header-bg.jpg'); /* Background image for the header */
+            background-size: cover;
+            background-position: center;
+        }
+        h2 {
+            margin: 0;
+        }
+        main {
+            padding: 20px;
+        }
+        .section {
+            background-color: white;
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        #proposals h3, #chatbox h3 {
+            color: #0056b3;
+            margin-bottom: 15px;
+        }
+        #proposals {
+            padding: 10px;
+            border-top: 3px solid #0056b3;
+        }
+        #proposals li {
+            list-style-type: none;
+            margin-bottom: 20px;
+            padding: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        #proposals li:last-child {
+            border-bottom: none;
+        }
+        #proposals button, #send_message {
+            background-color: #0056b3;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin-top: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        #proposals button:hover, #send_message:hover {
+            background-color: #004299;
+        }
+        #chatbox {
+            margin-top: 30px;
+            padding: 10px;
+            border-top: 3px solid #0056b3;
+        }
+        #chat_content {
+            height: 200px;
+            overflow-y: scroll;
+            background-color: #e9ecef;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        #chat_message {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #e0e0e0;
+        }
+        .logout-tab {
+            background-color: #f44336;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 14px;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+        }
+        .logout-tab:hover {
+            background-color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h2>Welcome to the DRC page Prof. {{ user.first_name }} {{ user.last_name }} From {{user.userprofile.department}} </h2>
+        <a href="{% url 'logout' %}" class="logout-tab">Logout</a>
+        
+    </header>
+    
+
+    <main >
+        <div style="text-align: right;" >
+            <button>
+                <a href="https://accounts.google.com/InteractiveLogin/signinchooser?..." target="_blank" >Send Email</a>
+            </button>
+        </div>
+        <div class="section" id="proposals">
+            <h3>Proposals Assigned by RC Convener</h3>
+            <ul>
+                <!-- Proposals will be dynamically loaded here -->
+            </ul>
+        </div>
+
+        <div class="section" id="chatbox">
+            <h3>Chat with RC Convener and Faculties</h3>
+            <div id="chat_content">
+                <!-- Chat content will be dynamically loaded here -->
+            </div>
+            <textarea id="chat_message" placeholder="Type your message here..."></textarea>
+            <button id="send_message">Send</button>
+        </div>
+    </main>
+    <script>
+        var odrcName = "{{ user.first_name|escapejs }}"; 
+        var dept ="{{ user.userprofile.department|escapejs }}";
+    </script>
+    <script>
+        $(document).ready(function() {
+            loadProposals();
+
+            function loadProposals() {
+                $.ajax({
+                    url: '{% url "load_proposals_odrc" %}',
+                    type: 'GET',
+                    success: function(response) {
+
+                        var proposalsHtml = '';
+                        response.proposals.forEach(function(proposal) {
+                            proposalsHtml += `
+                                <li id="proposal_${proposal.id}">
+                                <input type="checkbox" class="proposal_checkbox" value="${proposal.id}">
+                                
+                                <strong>${proposal.title}</strong><br><br>
+
+                                <strong>Abstract:</strong> ${proposal.abstract}<br><br>
+                                <strong>Keywords:</strong> ${proposal.keywords}<br><br>
+                                <strong>Status:</strong> ${proposal.status}<br><br>
+                                <strong>DRC Comment:</strong> ${proposal.dcr_comment}<br><br>
+
+                                ${proposal.full_paper_url ? `<strong>Full Paper:</strong> <a href="${proposal.full_paper_url}" download>Download Full Paper</a>` : ''}
+                                <br><br>
+
+                                ${proposal.plagiarism_url ? `<strong>Plagiarism Report:</strong> <a href="${proposal.plagiarism_url}" download>Download Plagiarism Report</a>` : ''}
+                                <br><br>
+
+                                <button class="approve_proposal" data-id="${proposal.id}">Approve</button>
+                                <button class="reject_proposal" data-id="${proposal.id}">Reject</button>
+                                {% comment %} <button class="communicate" data-id="${proposal.id}" data-faculty="${proposal.user_profile_id}">
+                                    Communicate with Faculty
+                                </button> {% endcomment %}
+                            </li>
+                            `;
+                        });
+                        $('#proposals ul').html(proposalsHtml);
+
+                        // Attach event handlers to the newly added buttons
+                        $('.approve_proposal').click(function() {
+                            var proposalId = $(this).data('id');
+                            updateProposalStatus(proposalId, 'Approved');
+                        });
+
+                        $('.reject_proposal').click(function() {
+                            var proposalId = $(this).data('id');
+                            updateProposalStatus(proposalId, 'Rejected');
+                        });
+
+
+                        $('.communicate').click(function() {
+                            var proposalId = $(this).data('id');
+                            var facultyId = $(this).data('faculty');
+                            communicateWithFaculty(proposalId, facultyId);
+                        });
+                    },
+                    error: function(xhr) {
+                        alert('Error loading proposals!');
+                    }
+                });
+            }
+
+            function updateProposalStatus(proposalId, odeptstatus) {
+                var comment = prompt('Enter your comment:');
+                
+                $.ajax({
+                    url: '{% url "update_proposal_status_odrc" %}',
+                    type: 'POST',
+                    data: {
+                        'proposal_id': proposalId,
+                        'status': odeptstatus,
+                        'comment': comment,
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        if (response.odeptstatus === 'success') {
+                            $(`#proposal_${proposalId}`).remove();
+                        } else {
+                            alert('Error updating proposal status.');
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error(xhr.responseText); // Log error details for debugging
+                        alert('Error updating proposal status.');
+                    }
+                });
+            }
+
+            function communicateWithFaculty(proposalId, facultyId) {
+                var message = prompt('Enter your message to the faculty:');
+                
+                $.ajax({
+                    url: '{% url "send_message_to_faculty" %}',
+                    type: 'POST',
+                    data: {
+                        'proposal_id': proposalId,
+                        'faculty_id': facultyId,
+                        'message': message,
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            alert('Message sent to faculty successfully.');
+                        } else {
+                            alert('Error sending message to faculty.');
+                        }
+                    },
+                    error: function(xhr) {
+                        alert('Error sending message to faculty.');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

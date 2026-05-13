@@ -1,0 +1,13 @@
+
+{% for proposal in proposals %}
+    <div>
+        <ul>
+            <li>
+        
+        <p>Faculty Name : {{ proposal.user_profile.user.firstname }}</p>
+        <p>Status: {{ proposal.status }}</p>
+            </li>
+        </ol>
+
+    </div>
+{% endfor %}

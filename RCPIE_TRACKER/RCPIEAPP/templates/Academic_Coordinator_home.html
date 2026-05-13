@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center">Academic Coordinator Dashboard</h2>
+
+    <!-- File Upload Section -->
+    <div class="card mt-4 p-3">
+        <h4>Upload Excel File</h4>
+        <form action="{% url 'upload_excel' %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="file" name="excel_file" accept=".xlsx, .xls" class="form-control">
+            <button type="submit" class="btn btn-primary mt-2">Upload</button>
+        </form>
+    </div>
+
+    {% if coordinator.excel_file %}
+    <div class="card mt-4 p-3">
+        <h4>Uploaded File</h4>
+        <p><strong>File Name:</strong> {{ coordinator.excel_file.name }}</p>
+        <p><strong>Uploaded At:</strong> {{ coordinator.uploaded_at }}</p>
+    
+        <!-- Download the existing file -->
+        <a href="{% url 'download_excel_file' %}" class="btn btn-success">Download File</a>
+
+    
+        <!-- Delete button -->
+        <button onclick="deleteExcelFile()" class="btn btn-danger mt-2">Delete File</button>
+    </div>
+    {% else %}
+    <div class="card mt-4 p-3">
+        <h4>No File Uploaded</h4>
+    </div>
+    {% endif %}
+    
+</div>
+
+
+
+<script>
+    function deleteExcelFile() {
+        fetch(`/academic_coordinator/delete_excel/`, {
+            method: "GET",
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            location.reload();
+        });
+    }
+</script>
+{% endblock %}

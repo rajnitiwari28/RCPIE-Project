@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center">Upload Innovation Proof to Get RC_ID</h2>
+
+    <form method="POST" enctype="multipart/form-data" class="p-4 border rounded shadow">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="id_innovation_title" class="form-label">Innovation Title</label>
+            {{ form.innovation_title }}
+        </div>
+        <br><br>
+        <div class="mb-3">
+            <label for="id_proof_pdf_1" class="form-label">Upload proof as PDF</label>
+            {{ form.proof_pdf_1 }}
+        </div><br>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+</div>
+{% endblock %}

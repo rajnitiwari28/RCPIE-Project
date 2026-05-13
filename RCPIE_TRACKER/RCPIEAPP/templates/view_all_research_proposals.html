@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>RC Proposal Dashboard</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+body{
+    background:#f4f6f9;
+}
+.card{
+    border-radius:10px;
+}
+.nav-tabs .nav-link{
+    font-weight:600;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="container mt-4">
+
+<h2 class="text-center fw-bold mb-3">
+RC Proposal & Proof Dashboard
+</h2>
+
+<a href="{% url 'rc_convener_home' %}" class="btn btn-secondary mb-3">
+Back Home
+</a>
+
+<!-- FILTER -->
+<div class="card shadow-sm p-3 mb-4">
+<div class="row">
+
+<div class="col-md-3">
+<input type="text" id="filterName" class="form-control" placeholder="Faculty Name">
+</div>
+
+<div class="col-md-2">
+<input type="text" id="filterId" class="form-control" placeholder="Faculty ID">
+</div>
+
+<div class="col-md-4">
+<input type="text" id="filterTitle" class="form-control" placeholder="Title">
+</div>
+
+<div class="col-md-3">
+<select id="filterBranch" class="form-select">
+<option value="">All Branch</option>
+<option>CSE</option>
+<option>ISE</option>
+<option>ECE</option>
+<option>AIML</option>
+</select>
+</div>
+
+</div>
+</div>
+
+<!-- NAV -->
+<ul class="nav nav-tabs">
+<li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#research">Research</button></li>
+<li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#patent">Patent</button></li>
+<li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#project">Project</button></li>
+<li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#consultancy">Consultancy</button></li>
+<li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#enterprenuer">Entrepreneur</button></li>
+<li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#innovation">Innovation</button></li>
+<li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#proposal_p">Proposal_P</button></li>
+</ul>
+
+<div class="tab-content mt-3">
+
+<!-- RESEARCH -->
+<div class="tab-pane fade show active" id="research">
+<table class="table table-striped">
+<thead class="table-dark">
+<tr><th>ID</th><th>Name</th><th>Branch</th><th>Title</th><th>RC_ID</th><th>Proof</th></tr>
+</thead>
+<tbody>
+{% for proposal in proposals %}
+<tr class="filter-row">
+<td class="fid">{{proposal.id}}</td>
+<td class="fname">{{proposal.user_profile.user.first_name}} {{proposal.user_profile.user.last_name}}</td>
+<td class="fbranch">{{proposal.user_profile.department}}</td>
+<td class="ftitle">{{proposal.title}}</td>
+<td>{{proposal.rc_id}}</td>
+<td><a href="{% url 'proof_details' proposal.rc_id|urlencode %}" class="btn btn-sm btn-secondary">Proof</a></td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+
+<!-- PATENT -->
+<div class="tab-pane fade" id="patent">
+<table class="table table-striped">
+<thead class="table-dark">
+<tr><th>ID</th><th>Name</th><th>Branch</th><th>Title</th><th>RC_ID</th><th>Type</th><th>Proof</th></tr>
+</thead>
+<tbody>
+{% for patent in patents %}
+<tr class="filter-row">
+<td class="fid">{{ patent.id }}</td>
+<td class="fname">{{ patent.user_profile.user.first_name }} {{ patent.user_profile.user.last_name }}</td>
+<td class="fbranch">{{ patent.user_profile.department }}</td>
+<td class="ftitle">{{ patent.title }}</td>
+<td>{{ patent.rc_id }}</td>
+<td>{{ patent.patent_type }}</td>
+<td>
+{% if patent.proof_link %}
+    <a href="{{ patent.proof_link }}" target="_blank" class="btn btn-sm btn-success">View</a>
+{% else %}
+    <span class="text-muted">No proof uploaded</span>
+{% endif %}
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+
+<!-- PROJECT -->
+<div class="tab-pane fade" id="project">
+<table class="table table-striped">
+<thead class="table-dark">
+<tr><th>ID</th><th>Name</th><th>Branch</th><th>Title</th><th>RC_ID</th><th>Proof</th></tr>
+</thead>
+<tbody>
+{% for project in projects %}
+<tr class="filter-row">
+<td class="fid">{{project.id}}</td>
+<td class="fname">{{project.user_profile.user.first_name}} {{project.user_profile.user.last_name}}</td>
+<td class="fbranch">{{project.user_profile.department}}</td>
+<td class="ftitle">{{project.title}}</td>
+<td>{{project.rc_id}}</td>
+<td><a href="{% url 'get_project_proof_link' project.rc_id|urlencode %}" class="btn btn-sm btn-secondary">Proof</a></td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+
+<!-- CONSULTANCY -->
+<div class="tab-pane fade" id="consultancy">
+<table class="table table-striped">
+
+<thead class="table-dark">
+<tr>
+<th>ID</th>
+<th>Name</th>
+<th>Branch</th>
+<th>Title</th>
+<th>RC_ID</th>
+<th>Proof</th>
+
+</tr>
+</thead>
+
+<tbody>
+{% for c in consultancy_proofs %}
+<tr class="filter-row">
+
+<td class="fid">{{c.id}}</td>
+
+<td class="fname">
+{{c.faculty.first_name}} {{c.faculty.last_name}}
+</td>
+
+<td class="fbranch">
+{{c.faculty.userprofile.department}}
+</td>
+
+<td class="ftitle">
+{{c.cunsultancy_title}}
+</td>
+
+<td>{{c.rc_id}}</td>
+
+<td>
+{% if c.proof_pdf_1 %}
+<a href="{{c.proof_pdf_1.url}}" target="_blank" class="btn btn-sm btn-success">Doc</a>
+{% endif %}
+
+{% if c.proof_file %}
+<a href="{{c.proof_file.url}}" target="_blank" class="btn btn-sm btn-info">Proof</a>
+{% endif %}
+</td>
+
+</tr>
+{% endfor %}
+</tbody>
+
+</table>
+</div>
+
+<!-- ENTREPRENEUR -->
+<div class="tab-pane fade" id="enterprenuer">
+<table class="table table-striped">
+<thead class="table-dark">
+<tr><th>ID</th><th>Name</th><th>Branch</th><th>Title</th><th>RC_ID</th><th>Proof</th></tr>
+</thead>
+<tbody>
+{% for c in enterprenuer_proofs %}
+<tr class="filter-row">
+
+<td class="fid">{{c.id}}</td>
+
+<td class="fname">
+{{c.faculty.first_name}} {{c.faculty.last_name}}
+</td>
+
+<td class="fbranch">
+{{c.faculty.userprofile.department}}
+</td>
+
+<td class="ftitle">
+{{c.enterprenuer_title}}
+</td>
+
+<td>{{c.rc_id}}</td>
+
+<td>
+{% if c.proof_pdf_1 %}
+<a href="{{c.proof_pdf_1.url}}" target="_blank" class="btn btn-sm btn-success">Doc</a>
+{% endif %}
+
+{% if c.proof_file %}
+<a href="{{c.proof_file.url}}" target="_blank" class="btn btn-sm btn-info">Proof</a>
+{% endif %}
+</td>
+
+</tr>
+{% endfor %}
+
+</tbody>
+</table>
+</div>
+
+<!-- INNOVATION -->
+<div class="tab-pane fade" id="innovation">
+<table class="table table-striped">
+<thead class="table-dark">
+<tr><th>ID</th><th>Name</th><th>Branch</th><th>Title</th><th>RC_ID</th><th>Proof</th></tr>
+</thead>
+<tbody>
+{% for i in innovation_proofs %}
+<tr class="filter-row">
+<td class="fid">{{i.id}}</td>
+<td class="fname">{{i.user_profile.user.first_name}} {{i.user_profile.user.last_name}}</td>
+<td class="fbranch">{{i.user_profile.department}}</td>
+<td class="ftitle">{{i.main_title}}</td>
+<td>{{i.rc_id}}</td>
+<td><a href="{{i.proof_link}}" target="_blank" class="btn btn-sm btn-success">View</a></td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+
+<!-- PROPOSAL_P -->
+<div class="tab-pane fade" id="proposal_p">
+<table class="table table-striped">
+<thead class="table-dark">
+<tr><th>ID</th><th>Name</th><th>Branch</th><th>Title</th><th>RC_ID</th><th>Proof</th></tr>
+</thead>
+<tbody>
+{% for c in proposal_proofs %}
+<tr class="filter-row">
+
+<td class="fid">{{c.id}}</td>
+
+<td class="fname">
+{{c.faculty.first_name}} {{c.faculty.last_name}}
+</td>
+
+<td class="fbranch">
+{{c.faculty.userprofile.department}}
+</td>
+
+<td class="ftitle">
+{{c.proposal_title}}
+</td>
+
+<td>{{c.rc_id}}</td>
+
+<td>
+{% if c.proof_pdf_1 %}
+<a href="{{c.proof_pdf_1.url}}" target="_blank" class="btn btn-sm btn-success">Doc</a>
+{% endif %}
+
+{% if c.proof_file %}
+<a href="{{c.proof_file.url}}" target="_blank" class="btn btn-sm btn-info">Proof</a>
+{% endif %}
+</td>
+
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+
+</div>
+</div>
+
+<!-- FILTER SCRIPT -->
+<script>
+function filterAllTabs(){
+let name=document.getElementById("filterName").value.toLowerCase();
+let id=document.getElementById("filterId").value.toLowerCase();
+let title=document.getElementById("filterTitle").value.toLowerCase();
+let branch=document.getElementById("filterBranch").value.toLowerCase();
+
+document.querySelectorAll(".filter-row").forEach(row=>{
+let rname=row.querySelector(".fname").innerText.toLowerCase();
+let rid=row.querySelector(".fid").innerText.toLowerCase();
+let rtitle=row.querySelector(".ftitle").innerText.toLowerCase();
+let rbranch=row.querySelector(".fbranch").innerText.toLowerCase();
+
+row.style.display=
+(rname.includes(name)&& rid.includes(id)&& rtitle.includes(title)&& rbranch.includes(branch)) ? "" : "none";
+});
+}
+
+document.querySelectorAll("#filterName,#filterId,#filterTitle,#filterBranch").forEach(el=>{
+el.addEventListener("keyup",filterAllTabs);
+el.addEventListener("change",filterAllTabs);
+});
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
