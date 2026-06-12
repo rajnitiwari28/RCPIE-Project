@@ -1,0 +1,8 @@
+<div>
+    {% for chat in chat_messages %}
+    <div>
+        <strong>{{ chat.sender.get_full_name }}</strong>: {{ chat.message }}
+        <br><small>{{ chat.timestamp }}</small>
+    </div>
+    {% endfor %}
+</div>

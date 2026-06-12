@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Dean of Research Dashboard</h2>
+
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">I-Load Patent Submissions</h4>
+        </div>
+
+        <div class="card-body">
+            <ul id="research_dean_patent_list" class="list-group">
+                <!-- Patents will be loaded via AJAX -->
+            </ul>
+        </div>
+    </div>
+</div>
+<select id="chat-user">
+            <option disabled selected>Select a user</option>
+            {% for user in users %}
+              <option value="{{ user.id }}">{{ user.username }}</option>
+            {% endfor %}
+          </select>
+          
+          <div id="chat-box" style="height: 250px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; margin-top: 10px;"></div>
+          
+          <input type="text" id="message" placeholder="Type a message">
+          <button onclick="sendMessage()">Send</button>
+          <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+          <script>
+              let receiverId = null;
+          
+              $("#chat-user").on('change', function() {
+                  receiverId = $(this).val();
+                  fetchMessages();
+              });
+          
+              function sendMessage() {
+                  const msg = $("#message").val();
+                  if (!receiverId) {
+                      alert("Select a user first.");
+                      return;
+                  }
+          
+                  $.post("{% url 'send_message' %}", {
+                      receiver_id: receiverId,
+                      message: msg,
+                      csrfmiddlewaretoken: '{{ csrf_token }}'
+                  }, function(data) {
+                      $("#message").val('');
+                      fetchMessages();
+                  });
+              }
+          
+              function fetchMessages() {
+                  if (!receiverId) return;
+          
+                  $.post("{% url 'get_messages' %}", {
+                      user2_id: receiverId,
+                      csrfmiddlewaretoken: '{{ csrf_token }}'
+                  }, function(data) {
+                      $("#chat-box").empty();
+                      data.forEach(msg => {
+                          $("#chat-box").append(`<div><strong>${msg.sender__username}</strong>: ${msg.message}</div>`);
+                      });
+                  });
+              }
+          
+              setInterval(fetchMessages, 3000);
+          </script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    // Load patents assigned to Research Dean
+    function loadPatentsRD() {
+        $.ajax({
+            url: "{% url 'load_research_dean_patents' %}",
+            type: "GET",
+            success: function (response) {
+                let html = "";
+
+                if (response.patents.length === 0) {
+                    html = `<li class="list-group-item text-center text-muted">
+                                No I-Load patent submissions available.
+                            </li>`;
+                } else {
+                    response.patents.forEach(function (p) {
+                        html += `
+                        <li class="list-group-item mb-3 border rounded">
+
+                            <h5>${p.title}</h5>
+
+                            <p><strong>Patent Type:</strong> ${p.patent_type}</p>
+                            <p><strong>Abstract:</strong> ${p.abstract}</p>
+                            <p><strong>Status:</strong> <span class="text-primary">${p.status}</span></p>
+
+                            <p>
+                                <strong>Download PDF:</strong> 
+                                ${p.full_pdf 
+                                    ? `<a href="${p.full_pdf}" target="_blank" class="btn btn-link">Download</a>` 
+                                    : `<span class="text-danger">No File</span>`
+                                }
+                            </p>
+
+                            <textarea class="form-control mb-2 comment-box" 
+                                      id="comment-${p.id}" placeholder="Add Dean comment..."></textarea>
+
+                            <button class="btn btn-success approve-btn" data-id="${p.id}">Approve</button>
+                            <button class="btn btn-danger reject-btn" data-id="${p.id}">Reject</button>
+                        </li>`;
+                    });
+                }
+
+                $("#research_dean_patent_list").html(html);
+            }
+        });
+    }
+
+    loadPatentsRD();
+
+    // Approve action
+    $(document).on("click", ".approve-btn", function () {
+        let id = $(this).data("id");
+        let comment = $("#comment-" + id).val();
+
+        $.post("{% url 'update_research_dean_patent' %}", {
+            id: id,
+            action: "approve",
+            comment: comment,
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+        }, function () {
+            alert("Patent Approved!");
+            loadPatentsRD();
+        });
+    });
+
+    // Reject action
+    $(document).on("click", ".reject-btn", function () {
+        let id = $(this).data("id");
+        let comment = $("#comment-" + id).val();
+
+        $.post("{% url 'update_research_dean_patent' %}", {
+            id: id,
+            action: "reject",
+            comment: comment,
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+        }, function () {
+            alert("Patent Rejected!");
+            loadPatentsRD();
+        });
+    });
+</script>
+
+{% endblock %}

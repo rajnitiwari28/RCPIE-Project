@@ -1,0 +1,32 @@
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#research">Research Proposals</a></li>
+    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#patent">Patents</a></li>
+    <!-- Add more tabs -->
+  </ul>
+  
+  <div class="tab-content">
+    <div class="tab-pane fade show active" id="research">
+      <table class="table">
+        <thead><tr><th>Title</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for r in research_proposals %}
+            <tr><td>{{ r.title }}</td><td>{{ r.status }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  
+    <div class="tab-pane fade" id="patent">
+      <table class="table">
+        <thead><tr><th>Title</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for p in patents %}
+            <tr><td>{{ p.title }}</td><td>{{ p.status }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  
+    <!-- Repeat for other models -->
+  </div>
+  
