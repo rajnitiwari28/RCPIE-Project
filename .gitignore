@@ -3,6 +3,7 @@ env/
 env1/
 venv/
 .venv/
+RCPIE_TRACKER/
 
 # Python cache
 __pycache__/
