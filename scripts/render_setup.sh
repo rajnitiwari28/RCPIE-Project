@@ -17,6 +17,9 @@ PY
 # Apply migrations
 python manage.py migrate --noinput
 
+# Show auth migration status
+python manage.py showmigrations auth
+
 # Collect static files
 python manage.py collectstatic --noinput
 
