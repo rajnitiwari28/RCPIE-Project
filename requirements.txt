@@ -5,3 +5,4 @@ psycopg2-binary
 dj-database-url
 django-widget-tweaks
 openpyxl
+Pillow>=10.1.0
