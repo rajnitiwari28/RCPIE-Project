@@ -6,12 +6,12 @@ services:
     branch: main
     buildCommand: pip install -r requirements.txt
     releaseCommand: python manage.py migrate && python manage.py collectstatic --noinput
-    startCommand: gunicorn RCPIE.wsgi
+    startCommand: gunicorn RCPIE.wsgi --bind 0.0.0.0:$PORT
     envVars:
       - key: DJANGO_DEBUG
         value: "False"
       - key: DJANGO_ALLOWED_HOSTS
-        value: "rcpie-tracker.onrender.com"
+        value: "rcpie-project-1.onrender.com"
       - key: DJANGO_SECRET_KEY
         sync: false
       - key: DATABASE_URL
