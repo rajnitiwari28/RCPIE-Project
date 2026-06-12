@@ -1,1 +1,1 @@
-web: gunicorn RCPIE.wsgi
+web: gunicorn RCPIE.wsgi --bind 0.0.0.0:$PORT
