@@ -3,6 +3,17 @@ set -euo pipefail
 
 echo "Running render setup: migrate, collectstatic, create superuser if provided"
 
+if [ -n "${DATABASE_URL:-}" ]; then
+  echo "DATABASE_URL is set"
+else
+  echo "DATABASE_URL is not set — using SQLite, which is ephemeral on Render"
+fi
+
+python - <<'PY'
+from django.conf import settings
+print('DB engine:', settings.DATABASES['default']['ENGINE'])
+PY
+
 # Apply migrations
 python manage.py migrate --noinput
 
