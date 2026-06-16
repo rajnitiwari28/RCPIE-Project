@@ -22,14 +22,18 @@ def _run_migrations_if_requested():
 	"""
 	try:
 		if os.environ.get('RUN_MIGRATIONS_AT_STARTUP', 'False') == 'True':
-            import django
-            from django.core.management import call_command
-            import sys
-            
-            # Setup Django before running migrations
-            os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'RCPIE.settings')
-            django.setup()
-            
+			# Import here to avoid importing Django before settings configured
+			from django.core.management import call_command
+			import sys
+			print('RUN_MIGRATIONS_AT_STARTUP=True; running migrations...', file=sys.stderr)
+			call_command('migrate', '--noinput')
+			print('Migrations complete.', file=sys.stderr)
+	except Exception as exc:
+		# Log but do not prevent the app from starting; release logs will show the error
+		import traceback, sys
+		print('Error running migrations at startup:', file=sys.stderr)
+		traceback.print_exc()
+
 
 _run_migrations_if_requested()
 
