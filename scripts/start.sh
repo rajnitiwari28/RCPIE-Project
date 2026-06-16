@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+export DJANGO_SETTINGS_MODULE=RCPIE.settings
+
 echo "=== Render start: running migrations before launching gunicorn ==="
 if [ -n "${DATABASE_URL:-}" ]; then
   echo "DATABASE_URL is set"

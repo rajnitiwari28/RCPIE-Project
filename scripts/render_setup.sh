@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+export DJANGO_SETTINGS_MODULE=RCPIE.settings
+
 echo "=== Render release: debug start ==="
 echo "User: $(whoami || true)"
 echo "Python: $(python --version 2>&1 || true)"
