@@ -1,1 +1,1 @@
-web: gunicorn RCPIE.wsgi --bind 0.0.0.0:$PORT
+web: bash scripts/start.sh
