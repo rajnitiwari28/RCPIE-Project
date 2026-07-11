@@ -22,7 +22,9 @@
                         </p>
 
                         {% if review.research_proposal.full_paper %}
-                            <a href="{{ review.research_proposal.full_paper.url }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                            <a href="{% url 'serve_pdf' review.research_proposal.id %}"
+                        target="_blank"
+                        class="btn btn-outline-primary btn-sm">
                                 View Proposal
                             </a>
                         {% else %}

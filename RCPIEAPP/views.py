@@ -398,7 +398,6 @@ from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.urls import reverse
 import json
-
 from django.contrib.auth.decorators import login_required
 @login_required(login_url='/login/')
 def load_proposals(request):
@@ -425,8 +424,10 @@ def load_proposals(request):
             'abstract': p.abstract,
             'status': p.status,
             'user_profile__department': p.user_profile.department,
-            'full_paper_url': p.full_paper.url if p.full_paper else None,
-            'plagiarism_url': p.plagiarism.url if p.plagiarism else None,
+            'full_paper_url': request.build_absolute_uri(reverse('serve_pdf', args=[p.id])) if p.full_paper else None,
+            'plagiarism_url': request.build_absolute_uri(
+    reverse('serve_plagiarism', args=[p.id])
+) if p.plagiarism else None,
             'dcr_comment': p.dcr_comment,
             'keywords': p.keywords,          
             'research_type': p.research_type,      
@@ -1193,7 +1194,7 @@ def get_other_dept_drcs(request):
 
     data = [
         {
-            "id": drc.user_profile.user.id,
+            "id": drc.id,
             "name": f"{drc.user_profile.user.first_name} {drc.user_profile.user.last_name}",
             "department": drc.user_profile.department   # Correct department source
         }
@@ -1206,21 +1207,40 @@ def get_other_dept_drcs(request):
 from django.contrib.auth.decorators import login_required
 @login_required(login_url='/login/')
 def load_proposals_odrc(request):
-    proposals = ResearchProposal.objects.filter(status='Sent to Other Dept DRC').values('id', 'title', 'abstract', 'keywords', 'status', 'full_paper','dcr_comment','plagiarism')
+    try:
+        drc_head = OtherDepartmentDRCHead.objects.get(user_profile=request.user.userprofile)
+    except OtherDepartmentDRCHead.DoesNotExist:
+        return JsonResponse({'proposals': []})
+
+    routings = ProposalRouting.objects.filter(
+        drc=drc_head
+    ).select_related('proposal')
     data = []
-    for proposal in proposals:
-        if proposal['full_paper']:
-            proposal['full_paper_url'] = request.build_absolute_uri(reverse('serve_pdf', args=[proposal['id']]))
+    for routing in routings:
+        proposal = routing.proposal
+        proposal_data = {
+            'id': proposal.id,
+            'title': proposal.title,
+            'abstract': proposal.abstract,
+            'keywords': proposal.keywords,
+            'status': proposal.status,
+            'routing_status': routing.status,
+            'dcr_comment': routing.comment or proposal.dcr_comment,
+        }
+
+        if proposal.full_paper:
+            proposal_data['full_paper_url'] = request.build_absolute_uri(reverse('serve_pdf', args=[proposal.id]))
         else:
-            proposal['full_paper_url'] = None
-        if proposal['plagiarism']:
-            proposal['plagiarism_url'] = request.build_absolute_uri(
-                reverse('serve_pdf', args=[proposal['id']])
+            proposal_data['full_paper_url'] = None
+
+        if proposal.plagiarism:
+            proposal_data['plagiarism_url'] = request.build_absolute_uri(
+                reverse('serve_plagiarism', args=[proposal.id])
             )
         else:
-            proposal['plagiarism_url'] = None
+            proposal_data['plagiarism_url'] = None
 
-        data.append(proposal)
+        data.append(proposal_data)
 
     return JsonResponse({'proposals': data})
 
@@ -1234,6 +1254,10 @@ def update_proposal_status_odrc(request):
 
         comment = request.POST.get('comment', '')
         proposal = get_object_or_404(ResearchProposal, id=proposal_id)
+        routing = ProposalRouting.objects.filter(
+            proposal=proposal,
+            drc__user_profile=request.user.userprofile
+        ).first()
 
         # ✅ Save ODRC decision
         proposal.odeptstatus = status
@@ -1246,6 +1270,10 @@ def update_proposal_status_odrc(request):
             proposal.status = 'Rejected by Other Dept DRC'
 
         proposal.save()
+        if routing:
+            routing.status = status
+            routing.comment = comment
+            routing.save()
 
         print('Updated proposal', proposal.id, proposal.status)
 
@@ -1271,7 +1299,7 @@ def send_to_other_dept_drc(request):
 
             # Store routing history (so multiple DRCs can review)
             for drc_id in drc_ids:
-                drc = get_object_or_404(OtherDepartmentDRCHead, user_profile_id=drc_id)
+                drc = get_object_or_404(OtherDepartmentDRCHead, id=drc_id)
                 ProposalRouting.objects.get_or_create(
                     proposal=proposal,
                     drc=drc,
