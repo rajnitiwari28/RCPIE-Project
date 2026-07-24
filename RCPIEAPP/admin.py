@@ -1,11 +1,11 @@
 from django.contrib import admin
 
-from RCPIEAPP.models import DepartmentDRC, Faculty, OtherDepartmentDRCHead, RCConvener, ResearchProposal, UserProfile
+from RCPIEAPP.models import DepartmentDRC, Faculty, RCConvener, ResearchProposal, UserProfile
 
 # Register your models here.
 
 from django.contrib import admin
-from .models import DRC_Member, DeanResearch, PublishedPaper, UserProfile, RCConvener, DepartmentDRC, OtherDepartmentDRCHead
+from .models import DRC_Member, DeanResearch, PublishedPaper, UserProfile, RCConvener, DepartmentDRC
 
 @admin.action(description='Approve selected users')
 def approve_users(modeladmin, request, queryset):
@@ -18,8 +18,6 @@ def approve_users(modeladmin, request, queryset):
                 RCConvener.objects.create(user_profile=user_profile)
             elif user_profile.role == 'Department DRC':
                 DepartmentDRC.objects.create(user_profile=user_profile)
-            elif user_profile.role == 'Other Department DRC Head':
-                OtherDepartmentDRCHead.objects.create(user_profile=user_profile)
             elif user_profile.role == 'Research_Dean':
                 DeanResearch.objects.create(user_profile=user_profile)
             elif user_profile.role == 'DRC_Member':
@@ -33,7 +31,6 @@ admin.site.register(UserProfile, list_display=['user', 'role', 'is_approved_by_a
 admin.site.register(Faculty)
 admin.site.register(RCConvener)
 admin.site.register(DepartmentDRC)
-admin.site.register(OtherDepartmentDRCHead)
 admin.site.register(ResearchProposal)
 admin.site.register(PublishedPaper)
 

@@ -17,7 +17,7 @@ from .forms import ConsultancyProofForm, EnterprenuerProofForm, InnovationProofF
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from .forms import UserCreationForm
-from .models import AcademicCoordinator, CunsultancyProof, DRC_Member, DRCMemberReview, DeanResearch, DepartmentDRC, EnterprenuerProof, InnovationProof, OtherDepartmentDRCHead, Patent_proof, ProposalProof, ProposalRouting, RCConvener, UserProfile
+from .models import AcademicCoordinator, CunsultancyProof, DRC_Member, DRCMemberReview, DeanResearch, DepartmentDRC, EnterprenuerProof, InnovationProof, Patent_proof, ProposalProof, ProposalRouting, RCConvener, UserProfile
 from RCPIEAPP import models
 
 
@@ -64,10 +64,21 @@ def register(request):
                 RCConvener.objects.create(user_profile=user_profile)
 
             elif role == 'Department DRC':
-                DepartmentDRC.objects.create(user_profile=user_profile)
+                dept = form.cleaned_data.get('department')
 
-            elif role == 'Other Department DRC Head':
-                OtherDepartmentDRCHead.objects.create(user_profile=user_profile)
+                if DepartmentDRC.objects.filter(user_profile__department__iexact=dept).exists():
+                    messages.error(
+                        request,
+                        f"A DRC head for the {dept} department already exists. Please contact the admin."
+                    )
+                    return redirect('register')
+
+                DepartmentDRC.objects.create(
+                    user_profile=user_profile,
+                    department=dept,
+                    email=form.cleaned_data.get('email'),
+                    mob=form.cleaned_data.get('mob'),
+                )
 
             elif role == 'Academic Coordinator':
                 AcademicCoordinator.objects.create(user_profile=user_profile)
@@ -130,12 +141,6 @@ def login_view(request):
                 drc_group, created = Group.objects.get_or_create(name='Department_DRC')
                 user.groups.add(drc_group)
                 return redirect('dept_drc_home')  # Redirect to Department DRC Home
-
-            elif role == 'Other Department DRC Head':
-                other_drc_group, created = Group.objects.get_or_create(name='Other_Dept_DRC_Head')
-                user.groups.add(other_drc_group)
-                return redirect('other_dept_drc_home')  # Redirect to Other Department DRC Head Home
-            
             elif role == 'Academic Coordinator':
                 academic_coordinator_group, created = Group.objects.get_or_create(name='Academic Coordinator')
                 user.groups.add(academic_coordinator_group)
@@ -637,10 +642,43 @@ def send_to_dept_drc(request):
 
         proposals_data = []
         for proposal_id in proposal_ids:
-            proposal = get_object_or_404(ResearchProposal, id=proposal_id)
+
+            proposal = get_object_or_404(
+                ResearchProposal,
+                id=proposal_id
+            )
+
+            # Get proposal owner's department
+            proposal_department = proposal.user_profile.department
+
+            # Update proposal status
             proposal.status = 'Sent to Dept DRC'
-            proposal.sent_to_department = proposal.user_profile.department   # 👈 IMPORTANT
-            proposal.save()
+            proposal.sent_to_department = proposal_department
+
+            proposal.save(
+                update_fields=[
+                    'status',
+                    'sent_to_department'
+                ]
+            )
+
+            # Find DRC of proposal's department
+            dept_drc = DepartmentDRC.objects.filter(
+                user_profile__department__iexact=proposal_department
+            ).first()
+
+            if dept_drc:
+
+                # IMPORTANT:
+                # Create routing record for that DRC
+                ProposalRouting.objects.update_or_create(
+                    proposal=proposal,
+                    drc=dept_drc,
+                    defaults={
+                        'status': 'Pending Review',
+                        'drc_comment': ''
+                    }
+                )
 
             proposals_data.append({
                 'id': proposal.id,
@@ -649,18 +687,6 @@ def send_to_dept_drc(request):
                 'keywords': proposal.keywords,
                 'status': proposal.status
             })
-        projects_data = []
-        for project_id in project_ids:
-            project = get_object_or_404(ProjectProposal, id=project_id)
-            project.status = 'Sent to Dept DRC'
-            project.save()
-            projects_data.append({
-                'id': project.id,
-                'title': project.title,
-                'abstract': project.abstract,
-                'status': project.status
-            })
-            
         # ----- Proposal Proof (P-Load) -----
         proposal_p_data = []
         for proof_id in proposal_p_ids:
@@ -675,7 +701,7 @@ def send_to_dept_drc(request):
                 'faculty': proof.faculty.username,
                 'uploaded_at': proof.uploaded_at.strftime("%Y-%m-%d %H:%M:%S"),
             })
-        return JsonResponse({'status': 'success', 'proposals': proposals_data, 'patent': patent_data, 'projects': projects_data, 'proposal_p': proposal_p_data,})
+        return JsonResponse({'status': 'success', 'proposals': proposals_data, 'patent': patent_data,'proposal_p': proposal_p_data,})
 
     return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
 
@@ -1024,34 +1050,86 @@ def dept_drc_home(request):
 
 
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.urls import reverse
+from django.db.models import Q
+from .models import ResearchProposal
 @login_required(login_url='/login/')
+@login_required
 def load_proposals_drc(request):
 
-    user_dept = request.user.userprofile.department   # Logged-in DRC Department
+    logged_in_user = request.user
 
-    proposals = ResearchProposal.objects.filter(
-        status='Sent to Dept DRC',
-        user_profile__department=user_dept           # FILTER BY DEPARTMENT
-    ).values('id', 'title', 'abstract', 'keywords','user_profile__user_id', 'status', 'full_paper','plagiarism','dcr_comment','drc_member_status','drc_member_comments')
+    # Find DepartmentDRC of the currently logged-in user
+    drc = get_object_or_404(
+        DepartmentDRC,
+        user_profile__user=logged_in_user
+    )
 
-    data = []
+    # Get proposals routed specifically to this DRC
+    routings = ProposalRouting.objects.filter(
+        drc=drc,
+        status='Pending Review'
+    ).select_related(
+        'proposal',
+        'proposal__user_profile'
+    ).order_by('-id') 
 
-    for proposal in proposals:
-        if proposal['full_paper']:
-            proposal['full_paper_url'] = request.build_absolute_uri(reverse('serve_pdf', args=[proposal['id']]))
-        else:
-            proposal['full_paper_url'] = None
-        if proposal['plagiarism']:
-            proposal['plagiarism_url'] = request.build_absolute_uri(
-                reverse('serve_pdf', args=[proposal['id']])
-            )
-        else:
-            proposal['plagiarism_url'] = None
+    proposals = []
 
-        data.append(proposal)
+    for routing in routings:
 
-    return JsonResponse({'proposals': data})
+        proposal = routing.proposal
 
+        proposals.append({
+            'id': proposal.id,
+            'title': proposal.title,
+            'abstract': proposal.abstract,
+            'keywords': proposal.keywords,
+            'status': proposal.status,
+
+            # Routing comment
+            'dcr_comment': routing.drc_comment or '',
+
+            'drc_member_status': proposal.drc_member_status,
+            'drc_member_comments': proposal.drc_member_comments,
+
+            # Full paper
+            'full_paper_url': (
+                proposal.full_paper.url
+                if proposal.full_paper
+                else ''
+            ),
+
+            # Plagiarism report
+            # ResearchProposal field is 'plagiarism'
+            'plagiarism_url': (
+                proposal.plagiarism.url
+                if proposal.plagiarism
+                else ''
+            ),
+
+            # Faculty user ID
+            'user_profile__user_id': (
+                proposal.user_profile.user.id
+                if proposal.user_profile
+                else None
+            ),
+
+            # Faculty department
+            'user_profile__department': (
+                proposal.user_profile.department
+                if proposal.user_profile
+                else ''
+            ),
+
+            # Department of the DRC receiving the proposal
+            'drc_department': drc.user_profile.department,
+        })
+
+    return JsonResponse({
+        'proposals': proposals
+    })
 from django.contrib.auth.decorators import login_required
 @login_required(login_url='/login/')
 def update_proposal_status(request):
@@ -1075,26 +1153,48 @@ def update_proposal_status_drc(request):
         proposal_type = request.POST.get('proposal_type')
         status = request.POST.get('status')
         comment = request.POST.get('comment', '')
+
         if proposal_type == 'research':
             proposal = get_object_or_404(ResearchProposal, id=proposal_id)
+
+            # Update the proposal itself
+            proposal.status = status
+            proposal.dcr_comment = comment
+            proposal.save()
+
+            # ✅ Update the routing row for THIS DRC so it drops off their pending list
+            drc = get_object_or_404(DepartmentDRC, user_profile__user=request.user)
+            routing = ProposalRouting.objects.filter(
+                proposal=proposal,
+                drc=drc
+            ).first()
+            if routing:
+                routing.status = 'Reviewed'   # anything other than 'Pending Review'
+                routing.drc_comment = comment
+                routing.save()
+
         elif proposal_type == 'patent':
             proposal = get_object_or_404(Patent, id=proposal_id)
+            proposal.status = status
+            proposal.dcr_comment = comment
+            proposal.save()
+
         elif proposal_type == 'project':
             proposal = get_object_or_404(ProjectProposal, id=proposal_id)
-        elif proposal_type == 'proposal_p':  # ⚡ Added for Proposal Proof
+            proposal.status = status
+            proposal.dcr_comment = comment
+            proposal.save()
+
+        elif proposal_type == 'proposal_p':
             proposal = get_object_or_404(ProposalProof, id=proposal_id)
+            proposal.status = status
+            if hasattr(proposal, 'dcr_comment'):
+                proposal.dcr_comment = comment
+            proposal.save()
+
         else:
             return JsonResponse({'status': 'error', 'message': 'Invalid proposal type.'})
 
-        # ⚡ Make sure ProposalProof model has these fields
-        proposal.status = status
-        if hasattr(proposal, 'dcr_comment'):
-            proposal.dcr_comment = comment
-        else:
-            # If ProposalProof has no dcr_comment, you may add a field in model
-            pass
-
-        proposal.save()
         return JsonResponse({'status': 'success'})
 
     return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
@@ -1182,67 +1282,22 @@ def send_message_to_faculty_patent(request):
     return JsonResponse({'status': 'error'})
 # Other dept DRC views================================================================
 from django.contrib.auth.decorators import login_required
-def other_dept_drc_home(request):
-    return render(request, 'other_dept_drc_home.html')
+
 @login_required
 def get_other_dept_drcs(request):
-    current_dept = request.user.userprofile.department
-    # Filter based on linked user's department
-    drc_users = OtherDepartmentDRCHead.objects.exclude(
-        user_profile__department=current_dept
-    )
-
-    data = [
-        {
-            "id": drc.id,
-            "name": f"{drc.user_profile.user.first_name} {drc.user_profile.user.last_name}",
-            "department": drc.user_profile.department   # Correct department source
-        }
-        for drc in drc_users
-    ]
-
-    return JsonResponse({"drc_list": data})
-
-
-from django.contrib.auth.decorators import login_required
-@login_required(login_url='/login/')
-def load_proposals_odrc(request):
-    try:
-        drc_head = OtherDepartmentDRCHead.objects.get(user_profile=request.user.userprofile)
-    except OtherDepartmentDRCHead.DoesNotExist:
-        return JsonResponse({'proposals': []})
-
-    routings = ProposalRouting.objects.filter(
-        drc=drc_head
-    ).select_related('proposal')
-    data = []
-    for routing in routings:
-        proposal = routing.proposal
-        proposal_data = {
-            'id': proposal.id,
-            'title': proposal.title,
-            'abstract': proposal.abstract,
-            'keywords': proposal.keywords,
-            'status': proposal.status,
-            'routing_status': routing.status,
-            'dcr_comment': routing.comment or proposal.dcr_comment,
-        }
-
-        if proposal.full_paper:
-            proposal_data['full_paper_url'] = request.build_absolute_uri(reverse('serve_pdf', args=[proposal.id]))
-        else:
-            proposal_data['full_paper_url'] = None
-
-        if proposal.plagiarism:
-            proposal_data['plagiarism_url'] = request.build_absolute_uri(
-                reverse('serve_plagiarism', args=[proposal.id])
+    drcs = DepartmentDRC.objects.select_related('user_profile').all()
+    drc_list = []
+    for drc in drcs:
+        drc_list.append({
+            'id': drc.id,
+            'department': drc.user_profile.department,
+            'name': (
+                drc.user_profile.user.get_full_name()
+                or drc.user_profile.user.username
             )
-        else:
-            proposal_data['plagiarism_url'] = None
+        })
+    return JsonResponse({'drc_list': drc_list})
 
-        data.append(proposal_data)
-
-    return JsonResponse({'proposals': data})
 
 from django.contrib.auth.decorators import login_required
 @login_required(login_url='/login/')
@@ -1282,46 +1337,50 @@ def update_proposal_status_odrc(request):
     return JsonResponse({'odeptstatus': 'error'})
 
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 @login_required(login_url='/login/')
+
 def send_to_other_dept_drc(request):
-    if request.method == 'POST':
-        proposal_ids = request.POST.getlist('proposal_ids[]')
-        drc_ids = request.POST.getlist('drc_ids[]')  # <-- Changed
-        if not drc_ids:
-            return JsonResponse({'status': 'error', 'message': 'No DRC selected'}, status=400)
 
-        proposals_data = []
-
-        for proposal_id in proposal_ids:
-            proposal = get_object_or_404(ResearchProposal, id=proposal_id)
-            proposal.status = 'Sent to Other Dept DRC'
-            proposal.save()
-
-            # Store routing history (so multiple DRCs can review)
-            for drc_id in drc_ids:
-                drc = get_object_or_404(OtherDepartmentDRCHead, id=drc_id)
-                ProposalRouting.objects.get_or_create(
-                    proposal=proposal,
-                    drc=drc,
-                    defaults={'status': 'Pending Review'}
-                )
-                proposals_data.append({
-                    'proposal_id': proposal.id,
-                    'title': proposal.title,
-                    'drc': f"{drc.user_profile.first_name} {drc.user_profile.last_name}",
-                    'department': drc.department,
-                    'status': proposal.status,
-                })
-                
+    if request.method != 'POST':
         return JsonResponse({
-            'status': 'success',
-            'message': 'Proposal sent to selected DRC(s)',
-            'proposals': proposals_data
-        })
+            'status': 'error',
+            'message': 'Invalid request method'
+        }, status=400)
 
-    return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
+    proposal_ids = request.POST.getlist('proposal_ids')   # ✅ no brackets
+    drc_ids = request.POST.getlist('drc_ids')              # ✅ no brackets
 
+    if not proposal_ids:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'No proposal selected'
+        }, status=400)
 
+    if not drc_ids:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'No DRC selected'
+        }, status=400)
+
+    for proposal_id in proposal_ids:
+        proposal = get_object_or_404(ResearchProposal, id=proposal_id)
+
+        for drc_id in drc_ids:
+            drc = get_object_or_404(DepartmentDRC, id=drc_id)
+            ProposalRouting.objects.update_or_create(
+                proposal=proposal,
+                drc=drc,
+                defaults={'status': 'Pending Review', 'drc_comment': ''}
+            )
+
+        proposal.status = 'Sent to Department DRC'
+        proposal.save(update_fields=['status'])
+
+    return JsonResponse({
+        'status': 'success',
+        'message': 'Proposal sent successfully'
+    })
 from django.contrib.auth.decorators import login_required
 @login_required(login_url='/login/')
 def logout_view(request):
@@ -2555,4 +2614,3 @@ def generate_report(request):
     except Exception as e:
         messages.error(request, f"Error generating report: {str(e)}")
         return redirect('view_all_research_proposals')
-

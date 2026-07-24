@@ -120,7 +120,6 @@
 
 </ul>
 
-
 <!-- TAB CONTENT -->
 <div class="tab-content" id="myTabContent">
 
@@ -269,10 +268,8 @@ $('#send_to_drc_members').click(function() {
 });
 
 
-
             loadProposals();
             loadpatents();
-
 
             function loadProposals() {
                 $.ajax({
@@ -342,7 +339,6 @@ $('#send_to_drc_members').click(function() {
                     }
                 });
             }
-
 
             function updateProposalStatus(proposalId, proposalType, status) {
                 var comment = prompt('Enter your comment:');
@@ -617,7 +613,6 @@ function updateProposalPStatus(proofId, status) {
     });
 }
 
-
 // Send selected Proposal_P to Dept DRC
 $('#send_proposal_p').click(function() {
     var selected = [];
@@ -716,3 +711,4 @@ $('#confirmSendMembers').click(function() {
     </script>
 </body>
 </html>
+

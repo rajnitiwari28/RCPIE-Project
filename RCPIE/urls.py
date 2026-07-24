@@ -84,8 +84,8 @@ urlpatterns = [
     path('load_proposal_p_drc/', views.load_proposal_p_drc, name='load_proposal_p_drc'),
 
     # -------- OTHER DEPARTMENT DRC --------
-    path('other_dept_drc_home/', views.other_dept_drc_home, name='other_dept_drc_home'),
-    path('load_proposals_odrc/', views.load_proposals_odrc, name='load_proposals_odrc'),
+  
+  
     path('get-other-dept-drcs/', views.get_other_dept_drcs, name='get_other_dept_drcs'),
 
     # ⭐ CORRECT URL (Your main issue solved here)

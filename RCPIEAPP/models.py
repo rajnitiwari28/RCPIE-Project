@@ -208,28 +208,27 @@ class DRCMemberReview(models.Model):
 
     def __str__(self):
         return f"{self.drc_member.user_profile.user.username} - {self.research_proposal.id}"
-
-
-class OtherDepartmentDRCHead(models.Model):
-    user_profile = models.OneToOneField(UserProfile, on_delete=models.CASCADE)
-    email = models.EmailField()
-    mob = models.CharField(max_length=15, blank=True, null=True)
-    department = models.CharField(max_length=100, blank=True, null=True)
-
-    def __str__(self):
-        return f"{self.user_profile.user.username} ({self.department})"
-
     
 class ProposalRouting(models.Model):
-    proposal = models.ForeignKey(ResearchProposal, on_delete=models.CASCADE)
-    drc = models.ForeignKey(OtherDepartmentDRCHead, on_delete=models.CASCADE)
-    status = models.CharField(max_length=50, default="Pending")
-    comment = models.TextField(blank=True, null=True)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    proposal = models.ForeignKey(
+        ResearchProposal,
+        on_delete=models.CASCADE
+    )
 
-    class Meta:
-        unique_together = ('proposal', 'drc')  # Prevent duplicate entries
+    drc = models.ForeignKey(
+        DepartmentDRC,
+        on_delete=models.CASCADE
+    )
 
+    status = models.CharField(
+        max_length=50,
+        default='Pending'
+    )
+
+    drc_comment = models.TextField(
+        blank=True,
+        null=True
+    )
 
 class Patent(models.Model):
     user_profile = models.ForeignKey('UserProfile', on_delete=models.CASCADE)

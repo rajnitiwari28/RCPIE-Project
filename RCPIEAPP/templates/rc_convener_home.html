@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -120,7 +119,6 @@
   </ul>
 </div>
 
-
     <div class="container mt-4">
         <h2 class="text-center mb-4">Welcome, RC Convener {{ user.first_name }} {{ user.last_name }}</h2>
         
@@ -196,7 +194,6 @@
                     </div>
                     
                     </div>
-
 
                 
                     <button id="generate_rc_id" class="btn btn-success">Generate RC_ID</button>
@@ -379,7 +376,6 @@
                 });
             });
 
-
             $("#send_to_other_dept_drc").click(function(){
                 
                 $("#otherDeptDropdown").empty();
@@ -392,45 +388,73 @@
                         );
                     });
 
-
             var modal = new bootstrap.Modal(document.getElementById("selectOtherDeptModal"));
             modal.show();
                 });
             });
 
             $("#confirmOtherDeptSend").click(function(){
-                let selectedDRCs = $("#otherDeptDropdown").val();
-                let selectedProposals = [];
 
-                $(".proposal_checkbox:checked").each(function(){
-                    selectedProposals.push($(this).val());
-                });
+                        let selectedDRCs = $("#otherDeptDropdown").val() || [];
+                        let selectedProposals = [];
 
-                if(selectedDRCs.length === 0){
-                    alert("⚠ Please select at least one DRC.");
-                    return;
-                }
+                        $(".proposal_checkbox:checked").each(function(){
+                            selectedProposals.push($(this).val());
+                        });
 
-                if(selectedProposals.length === 0){
-                    alert("⚠ Please select proposals first.");
-                    return;
-                }
+                        if(selectedDRCs.length === 0){
+                            alert("⚠ Please select at least one DRC.");
+                            return;
+                        }
 
-                $.ajax({
-                    url: "{% url 'send_to_other_dept_drc' %}",
-                    type: "POST",
-                    data: {
-                        'proposal_ids[]': selectedProposals,
-                        'drc_ids[]': selectedDRCs,
-                        csrfmiddlewaretoken: "{{ csrf_token }}"
-                    },
-                    success: function(res){
-                        alert("✅ Proposal successfully sent to selected DRC(s)!");
-                        bootstrap.Modal.getInstance(document.getElementById('selectOtherDeptModal')).hide();
-                        location.reload();
-                    }
-                });
-            });
+                        if(selectedProposals.length === 0){
+                            alert("⚠ Please select proposals first.");
+                            return;
+                        }
+
+                        $.ajax({
+                            url: "{% url 'send_to_other_dept_drc' %}",
+                            type: "POST",
+
+                            traditional: true,
+
+                            data: {
+                                'proposal_ids': selectedProposals,
+                                'drc_ids': selectedDRCs,
+                                'csrfmiddlewaretoken': "{{ csrf_token }}"
+                            },
+
+                            success: function(res){
+
+                                if(res.status === 'success'){
+
+                                    alert("✅ Proposal successfully sent to selected DRC(s)!");
+
+                                    bootstrap.Modal
+                                        .getInstance(
+                                            document.getElementById('selectOtherDeptModal')
+                                        )
+                                        .hide();
+
+                                    // Reload RC proposals
+                                    loadProposals();
+
+                                } else {
+
+                                    alert(res.message || "Error sending proposal.");
+
+                                }
+                            },
+
+                            error: function(xhr){
+
+                                console.error(xhr.responseText);
+
+                                alert("❌ Error sending proposal to selected DRC.");
+
+                            }
+                        });
+                    });
 
         });
 
@@ -710,7 +734,6 @@
                                     <small><strong>Keywords:</strong></small> <strong>${proposal.keywords}</strong><br>
 
                                     <small><strong>Status:</strong></small> ${proposal.status}<br>
-
 
                                     <small><strong>DRC Comment:</strong></small> ${proposal.dcr_comment}<br>
 

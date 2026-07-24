@@ -2,7 +2,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import AcademicCoordinator, CunsultancyProof, DeanResearch, EnterprenuerProof, InnovationProof, Patent, UserProfile, Faculty, RCConvener, DepartmentDRC, OtherDepartmentDRCHead
+from .models import AcademicCoordinator, CunsultancyProof, DeanResearch, EnterprenuerProof, InnovationProof, Patent, UserProfile, Faculty, RCConvener, DepartmentDRC
 
 class UserCreationForm(UserCreationForm):
     ROLE_CHOICES = [
@@ -65,8 +65,6 @@ class UserCreationForm(UserCreationForm):
                 RCConvener.objects.create(user_profile=user_profile)
             elif role == 'Department DRC':
                 DepartmentDRC.objects.create(user_profile=user_profile)
-            elif role == 'Other Department DRC Head':
-                OtherDepartmentDRCHead.objects.create(user_profile=user_profile)
             elif role == 'Academic Coordinator':
                 AcademicCoordinator.objects.create(user_profile=user_profile)
             elif role == 'Research_Dean':
